@@ -1,6 +1,9 @@
 import { AGENT_SYSTEM_PROMPT } from "../src/data/resume.js";
 
-const MODEL = "claude-haiku-4-5";
+// Any OpenAI-compatible provider works — Groq (default), OpenRouter, or Gemini.
+// Switch providers by changing env vars only; see .env.example.
+const BASE_URL = process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1";
+const MODEL = process.env.LLM_MODEL || "llama-3.3-70b-versatile";
 const MAX_TOKENS = 600;
 const MAX_MESSAGES = 20; // ~10 user turns
 const MAX_CONTENT_CHARS = 1200;
@@ -22,7 +25,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "method not allowed" });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.LLM_API_KEY;
   if (!apiKey) {
     return res.status(503).json({ error: "agent backend not configured" });
   }
@@ -34,33 +37,30 @@ export default async function handler(req, res) {
   }
 
   try {
-    const anthropicRes = await fetch("https://api.anthropic.com/v1/messages", {
+    const upstream = await fetch(`${BASE_URL}/chat/completions`, {
       method: "POST",
       headers: {
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
+        authorization: `Bearer ${apiKey}`,
         "content-type": "application/json",
       },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: MAX_TOKENS,
-        system: AGENT_SYSTEM_PROMPT,
-        messages: messages.map(({ role, content }) => ({ role, content })),
+        messages: [
+          { role: "system", content: AGENT_SYSTEM_PROMPT },
+          ...messages.map(({ role, content }) => ({ role, content })),
+        ],
       }),
     });
 
-    if (!anthropicRes.ok) {
-      const detail = await anthropicRes.text();
-      console.error("anthropic error", anthropicRes.status, detail);
+    if (!upstream.ok) {
+      const detail = await upstream.text();
+      console.error("llm provider error", upstream.status, detail);
       return res.status(502).json({ error: "upstream model error" });
     }
 
-    const data = await anthropicRes.json();
-    const reply = (data.content ?? [])
-      .filter((block) => block.type === "text")
-      .map((block) => block.text)
-      .join("");
-
+    const data = await upstream.json();
+    const reply = data.choices?.[0]?.message?.content ?? "";
     return res.status(200).json({ reply });
   } catch (err) {
     console.error("chat handler error", err);

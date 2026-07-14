@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "reactbits": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "reactbits-dev-mcp-server"
+      ],
+      "env": {}
+    }
+  }
+}

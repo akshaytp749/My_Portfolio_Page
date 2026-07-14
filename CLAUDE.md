@@ -18,7 +18,7 @@ phone number must never appear in page copy, `resume.js`, or the agent prompt.
 
 - `npm install` — install deps
 - `npm run dev` — Vite dev server (agent uses local fallback answers; no key needed)
-- `vercel dev` — dev WITH the `/api/chat` function (needs `ANTHROPIC_API_KEY` in `.env`)
+- `vercel dev` — dev WITH the `/api/chat` function (needs `LLM_API_KEY` in `.env`)
 - `npm run build` / `npm run preview` — production build / preview
 
 ## Target architecture
@@ -35,7 +35,8 @@ src/
   components/
     Nav.jsx  Hero.jsx  Terminal.jsx  Systems.jsx  Projects.jsx  Stack.jsx  Footer.jsx
 api/
-  chat.js             Vercel serverless function → Anthropic API (key server-side only)
+  chat.js             Vercel serverless function → any OpenAI-compatible LLM provider
+                      (Groq default; OpenRouter/Gemini via env; key server-side only)
 ```
 
 ## Design system (do not drift without asking)
@@ -118,9 +119,11 @@ substitute without asking):
 - Plain `npm run dev` does NOT serve `/api/chat` — use `vercel dev` or the deployed
   site to test the live model.
 - React Flow (Phase 3) is heavy — lazy-load with dynamic import.
-- Anthropic serverless call: headers `x-api-key` + `anthropic-version: 2023-06-01`,
-  model `claude-haiku-4-5` (cheap/fast is right for this), max_tokens ~600.
-  Validate incoming messages (roles, string content, length caps, last must be user).
+- LLM backend is any OpenAI-compatible `/chat/completions` endpoint, configured ONLY
+  via env: `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` (free tiers: Groq default,
+  OpenRouter, Gemini — see `.env.example`). max_tokens ~600. Validate incoming
+  messages (roles, string content, length caps, last must be user). No Anthropic key
+  needed anywhere.
 - Vercel functions are stateless: in-memory rate limiting resets on every cold start
   and doesn't share state across instances. Use Upstash Redis (free tier) for per-IP
   limits, plus an Origin/Referer allowlist check in `api/chat.js` so other sites
@@ -232,7 +235,7 @@ ebonding across Workday, NetSuite, Salesforce & Jira"
 
 Headline: "The agent answered your questions. / *Akshay answers email.*"
 Links: email, github, linkedin, resume PDF download.
-Small print: "how this site works: React · the hero terminal calls Claude with my
+Small print: "how this site works: React · the hero terminal calls a live LLM with my
 resume as grounding context and streams the reply token-by-token · built with AI
 coding tools, reviewed by a human · view source ↗" (view-source links the public
 portfolio repo once it exists — Phase 4; render the link only when the URL is set

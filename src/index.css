@@ -71,6 +71,28 @@ body {
   animation: pulse-dot 2.4s ease-in-out infinite;
 }
 
+/* CSS-only CRT: scanlines + corner vignette over the terminal */
+.crt-overlay {
+  background:
+    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.28) 100%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.16) 0px,
+      rgba(0, 0, 0, 0.16) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+}
+
+/* dataflow disclosure arrow flips when open */
+.dataflow-arrow {
+  display: inline-block;
+  transition: transform 0.15s ease;
+}
+details[open] .dataflow-arrow {
+  transform: rotate(90deg);
+}
+
 /* focus visibility everywhere */
 :focus-visible {
   outline: 2px solid var(--amber);

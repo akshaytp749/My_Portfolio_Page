@@ -1,23 +1,26 @@
 import { projects } from "../data/resume.js";
+import Reveal from "./Reveal.jsx";
 
 export default function Projects() {
   return (
     <section id="projects" className="mx-auto max-w-[1120px] px-5 py-20">
-      <p className="eyebrow">Personal projects</p>
-      <h2
-        className="mt-4 text-4xl text-[var(--ink)]"
-        style={{ fontFamily: "var(--font-serif)", fontWeight: 400 }}
-      >
-        Built after hours
-      </h2>
+      <Reveal>
+        <p className="eyebrow">Personal projects</p>
+        <h2
+          className="mt-4 text-4xl text-[var(--ink)]"
+          style={{ fontFamily: "var(--font-serif)", fontWeight: 400 }}
+        >
+          Built after hours
+        </h2>
+      </Reveal>
       <div className="mt-10 grid gap-5 md:grid-cols-3">
-        {projects.map((p) => (
+        {projects.map((p, i) => (
+          <Reveal key={p.repo} delay={i * 0.08} className="h-full">
           <a
-            key={p.repo}
             href={p.url}
             target="_blank"
             rel="noreferrer"
-            className="group rounded-lg border border-[var(--line)] bg-[var(--panel)] p-6 transition-shadow hover:shadow-md"
+            className="group block h-full rounded-lg border border-[var(--line)] bg-[var(--panel)] p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
           >
             <div className="flex items-baseline justify-between gap-2">
               <h3
@@ -45,6 +48,7 @@ export default function Projects() {
               ))}
             </div>
           </a>
+          </Reveal>
         ))}
       </div>
     </section>

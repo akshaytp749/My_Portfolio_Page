@@ -20,10 +20,10 @@ Working style: complete one phase at a time. After each phase, run `npm run dev`
 - [x] Hero CTAs: quiet mono `Resume ↓` + `Email ↗` links under the intro (recruiter acts from screen one)
 - [x] Signals strip: one mono line under the Systems footnote (IIT Madras · Ace ×2 · 4 interns → FT · JEE AIR 186)
 - [x] `src/lib/agent.js`: POST `/api/chat` with multi-turn history; on failure fall back to local keyword answers (so plain `npm run dev` always demos, with a visible "demo mode" note)
-- [x] `api/chat.js`: Vercel serverless function → Anthropic API (`claude-haiku-4-5`, key from `ANTHROPIC_API_KEY` env only); validate/trim incoming messages, cap turns
+- [x] `api/chat.js`: Vercel serverless function → OpenAI-compatible LLM provider (Groq free tier by default; OpenRouter/Gemini via `LLM_BASE_URL`/`LLM_MODEL`; key from `LLM_API_KEY` env only); validate/trim incoming messages, cap turns
 - [x] Copy `Akshay_Resume_Latest_July.pdf` → `public/Akshay_Thomas_Resume.pdf`; footer links it
       (phone number stays PDF-only — never in page copy or `resume.js`)
-- [x] `.env.example` (`ANTHROPIC_API_KEY=`), `.gitignore` (node_modules, dist, .env, .vercel)
+- [x] `.env.example` (`LLM_API_KEY=` + provider presets), `.gitignore` (node_modules, dist, .env, .vercel)
 - [x] Verify: boot sequence plays, suggestion chips work, fallback answers respond, layout holds on mobile width
 
 ## Phase 1 — UI upgrade (the "make it super cool" pass)
@@ -33,32 +33,32 @@ Improve the baseline without losing the concept: quiet editorial light page (the
 Effect picks are LOCKED in CLAUDE.md (design system) — Particles background, Decrypted
 Text headline, Spotlight Card, CountUp, optional Magnet. Don't re-litigate here.
 
-- [ ] Install `motion` (framer-motion successor) for scroll-reveal + page-load orchestration
-- [ ] ReactBits "Particles" in the hero only — sparse, amber #B45309, low opacity.
+- [x] Install `motion` (framer-motion successor) for scroll-reveal + page-load orchestration
+- [x] ReactBits "Particles" in the hero only — sparse, amber #B45309, low opacity.
       The terminal is the hero, not the background.
-- [ ] ReactBits "Decrypted Text" on the hero headline's italic accent phrase (the ONE text effect)
-- [ ] Terminal polish: CSS-only CRT scanline overlay, faint amber glow, smoother auto-scroll
-- [ ] Terminal auto-demo: ~4s after boot, auto-type the first chip question + stream its LOCAL
+- [x] ReactBits "Decrypted Text" on the hero headline's italic accent phrase (the ONE text effect)
+- [x] Terminal polish: CSS-only CRT scanline overlay, faint amber glow, smoother auto-scroll
+- [x] Terminal auto-demo: ~4s after boot, auto-type the first chip question + stream its LOCAL
       fallback answer (never the live API); cancel on any interaction; skip on reduced-motion
-- [ ] Systems cards: hover lift + ReactBits "Spotlight Card" (amber spotlight)
-- [ ] Metrics: ReactBits "CountUp" when scrolled into view
-- [ ] Section headings: staggered reveal via motion variants (NOT a second text effect)
+- [x] Systems cards: hover lift + ReactBits "Spotlight Card" (amber spotlight)
+- [x] Metrics: ReactBits "CountUp" when scrolled into view
+- [x] Section headings: staggered reveal via motion variants (NOT a second text effect)
 - [ ] Optional: ReactBits "Magnet" on the footer email link only
-- [ ] Mobile pass: terminal height, nav collapse, type scale
-- [ ] Accessibility pass: focus states everywhere; terminal transcript is `aria-live="polite"`;
+- [x] Mobile pass: terminal height, nav collapse, type scale
+- [x] Accessibility pass: focus states everywhere; terminal transcript is `aria-live="polite"`;
       prefers-reduced-motion disables all of the above
 
 Rule of restraint: max ONE background effect + ONE text effect site-wide.
 
 ## Phase 2 — Real streaming chat backend
 
-- [ ] Upgrade `api/chat.js` to stream (Anthropic `stream: true` → ReadableStream/SSE)
+- [ ] Upgrade `api/chat.js` to stream (`stream: true` on the OpenAI-compatible endpoint → SSE passthrough)
 - [ ] Update `src/lib/agent.js` + Terminal to consume the stream (replace simulated token reveal)
 - [ ] Rate limiting via Upstash Redis free tier (in-memory does NOT work — Vercel functions
       are stateless across instances/cold starts) + Origin/Referer allowlist check — this
       endpoint spends real API credits
 - [ ] Max-turns cap per session (e.g. 10) with a friendly "email Akshay instead" message
-- [ ] Optional: provider swap to Gemini or Groq free tier; keep the provider behind one function so it's a one-file change
+- [x] Provider is already env-swappable (Groq/OpenRouter/Gemini free tiers, OpenAI-compatible) — done in Phase 0
 
 ## Phase 3 — Interactive architecture diagrams
 
@@ -80,7 +80,7 @@ Replace the mono dataflow strings in Systems cards with real diagrams:
 - [ ] Vercel Analytics (free) — learn whether visitors actually use the terminal
 - [ ] Make the portfolio repo public; set the repo URL in `resume.js` so the footer
       "view source ↗" link renders (verify no key ever entered git history first)
-- [ ] Deploy to Vercel; set `ANTHROPIC_API_KEY` env var; verify `/api/chat` in prod
+- [ ] Deploy to Vercel; set `LLM_API_KEY` (+ optional `LLM_BASE_URL`/`LLM_MODEL`) env vars; verify `/api/chat` in prod
 - [ ] Custom domain (optional)
 
 ## Phase 5 — Stretch (pick at most one or two)
