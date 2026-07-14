@@ -49,6 +49,21 @@ export const systems = [
       "LangGraph agents behind FastAPI, with a dynamic schema registry in PostgreSQL that decouples agent definitions from the codebase — new agents register instantly, no redeploy.",
     flow: "client ─SSE─▶ FastAPI ─▶ LangGraph ─▶ schema registry (Postgres) ─▶ BigQuery history",
     stack: ["LangGraph", "FastAPI", "PostgreSQL", "SSE", "BigQuery"],
+    diagram: {
+      nodes: [
+        { id: "client", label: "client", x: 0, y: 60, why: "Tokens stream in over SSE — the UI renders while the model thinks." },
+        { id: "fastapi", label: "FastAPI", x: 160, y: 60, why: "Async Python with native SSE — the right front door for LangGraph." },
+        { id: "langgraph", label: "LangGraph", x: 330, y: 60, why: "Agents as graph nodes — deterministic orchestration, easy tool wiring." },
+        { id: "registry", label: "schema registry", x: 510, y: 0, why: "Agent definitions live in Postgres, not code — new agents register with zero redeploys (the 90%)." },
+        { id: "bigquery", label: "BigQuery", x: 510, y: 120, why: "Every conversation persisted for multi-turn context and compliance." },
+      ],
+      edges: [
+        ["client", "fastapi", "SSE"],
+        ["fastapi", "langgraph"],
+        ["langgraph", "registry"],
+        ["langgraph", "bigquery"],
+      ],
+    },
   },
   {
     title: "Hybrid RAG System",
@@ -58,6 +73,23 @@ export const systems = [
       "Dense + sparse retrieval on Pinecone with heading-aware chunking, namespace isolation per domain, region-filtered metadata with global fallback, and incremental re-ingestion.",
     flow: "docs ─▶ heading-aware chunker ─▶ dense + sparse embed ─▶ Pinecone ─▶ Cloud Run ─stream─▶ answer",
     stack: ["Pinecone", "gemini-embedding-001", "Cloud Run", "Python"],
+    diagram: {
+      nodes: [
+        { id: "docs", label: "docs", x: 0, y: 60, why: "HR, IT and Support corpora — 100k+ vectors in production." },
+        { id: "chunker", label: "heading-aware chunker", x: 140, y: 60, why: "Chunks carry their heading breadcrumbs — context survives the split. Incremental re-ingestion skips unchanged content." },
+        { id: "embed", label: "dense + sparse embed", x: 360, y: 60, why: "Dense (gemini-embedding-001) catches meaning; sparse catches exact keywords — hybrid beats either alone." },
+        { id: "pinecone", label: "Pinecone", x: 580, y: 60, why: "Namespace per domain; metadata-driven region filtering with global fallback." },
+        { id: "cloudrun", label: "Cloud Run", x: 730, y: 0, why: "Scales to zero between queries; streams answers." },
+        { id: "answer", label: "answer", x: 880, y: 60, why: "Streamed back token-by-token." },
+      ],
+      edges: [
+        ["docs", "chunker"],
+        ["chunker", "embed"],
+        ["embed", "pinecone"],
+        ["pinecone", "cloudrun"],
+        ["cloudrun", "answer", "stream"],
+      ],
+    },
   },
   {
     title: "MCP Servers for Claude",
@@ -67,6 +99,23 @@ export const systems = [
       "Production MCP servers giving Claude live query and mutation access to Jira, Confluence, and Salesforce — with a Firestore-backed PAT registry and JWT bearer auth.",
     flow: "Claude ─Streamable HTTP─▶ MCP server ─OAuth 2.1─▶ Jira / Confluence / Salesforce",
     stack: ["MCP", "OAuth 2.1", "Firestore", "Cloud Run"],
+    diagram: {
+      nodes: [
+        { id: "claude", label: "Claude", x: 0, y: 90, why: "Runs live queries AND mutations against enterprise systems — not just reads." },
+        { id: "mcp", label: "MCP server", x: 170, y: 90, why: "Streamable HTTP on Cloud Run — one production server per system family." },
+        { id: "oauth", label: "OAuth 2.1", x: 360, y: 90, why: "Per-user credentials: Firestore-persisted PAT registry + JWT bearer for Salesforce. No shared service account." },
+        { id: "jira", label: "Jira", x: 560, y: 0, why: "Search, create, transition tickets." },
+        { id: "confluence", label: "Confluence", x: 560, y: 90, why: "Search and publish pages." },
+        { id: "salesforce", label: "Salesforce", x: 560, y: 180, why: "SOQL queries and record updates." },
+      ],
+      edges: [
+        ["claude", "mcp", "Streamable HTTP"],
+        ["mcp", "oauth"],
+        ["oauth", "jira"],
+        ["oauth", "confluence"],
+        ["oauth", "salesforce"],
+      ],
+    },
   },
   {
     title: "Document Analytics Agent",
@@ -76,6 +125,23 @@ export const systems = [
       "Gemini 2.5 writes Pandas; a regex sanitization layer intercepts and validates the generated code before local execution — numbers come from the dataframe, never the model.",
     flow: "query ─▶ Gemini 2.5 ─▶ pandas code ─▶ sanitizer ─▶ local exec ─▶ verified result",
     stack: ["Vertex AI", "Gemini 2.5", "Pandas", "Python"],
+    diagram: {
+      nodes: [
+        { id: "query", label: "query", x: 0, y: 60, why: "Natural-language question about a dataset too big for any context window." },
+        { id: "gemini", label: "Gemini 2.5", x: 140, y: 60, why: "Writes Pandas code instead of guessing answers — the model never sees the full data." },
+        { id: "code", label: "pandas code", x: 300, y: 60, why: "Generated, never trusted." },
+        { id: "sanitizer", label: "sanitizer", x: 470, y: 60, why: "Regex validation layer intercepts every generated snippet before anything executes." },
+        { id: "exec", label: "local exec", x: 620, y: 60, why: "Runs against the real dataframe — numbers come from the data, never the model (the 100%)." },
+        { id: "result", label: "verified result", x: 780, y: 60, why: "Calculation accuracy: 100%, hallucination risk: none." },
+      ],
+      edges: [
+        ["query", "gemini"],
+        ["gemini", "code"],
+        ["code", "sanitizer"],
+        ["sanitizer", "exec"],
+        ["exec", "result"],
+      ],
+    },
   },
 ];
 

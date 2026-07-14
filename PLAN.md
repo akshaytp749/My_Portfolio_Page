@@ -64,10 +64,10 @@ Rule of restraint: max ONE background effect + ONE text effect site-wide.
 
 Replace the mono dataflow strings in Systems cards with real diagrams:
 
-- [ ] Install `@xyflow/react` (React Flow, free); lazy-load it (it's heavy)
-- [ ] One diagram per system, data-driven from `resume.js` (nodes + edges arrays)
-- [ ] Animated edges (dash flow) showing data direction
-- [ ] Hover a node → tooltip with the design decision ("Why Postgres for the registry?")
+- [x] Install `@xyflow/react` (React Flow, free); lazy-load it (it's heavy)
+- [x] One diagram per system, data-driven from `resume.js` (nodes + edges arrays)
+- [x] Animated edges (dash flow) showing data direction
+- [x] Hover a node → tooltip with the design decision ("Why Postgres for the registry?")
 
 ## Phase 4 — Content, SEO, deploy
 

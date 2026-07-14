@@ -1,8 +1,12 @@
+import { lazy, Suspense, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { systems, systemsFootnote, signals } from "../data/resume.js";
 import SpotlightCard from "./reactbits/SpotlightCard.jsx";
 import CountUp from "./reactbits/CountUp.jsx";
 import Reveal from "./Reveal.jsx";
+
+// React Flow is heavy — it only downloads when a visitor opens a dataflow
+const SystemDiagram = lazy(() => import("./SystemDiagram.jsx"));
 
 function Metric({ metric }) {
   const reduce = useReducedMotion();
@@ -16,6 +20,41 @@ function Metric({ metric }) {
       <CountUp to={Number(value)} duration={1.6} />
       {suffix}
     </span>
+  );
+}
+
+function Dataflow({ system }) {
+  const [open, setOpen] = useState(false);
+
+  const flowString = (
+    <div className="mt-3 overflow-x-auto rounded border border-[var(--line)] bg-black/40 px-3 py-2.5">
+      <code className="whitespace-nowrap font-mono text-[11.5px] text-[var(--text-soft)]">
+        {system.flow}
+      </code>
+    </div>
+  );
+
+  return (
+    <details className="mt-4" onToggle={(e) => setOpen(e.currentTarget.open)}>
+      <summary className="dataflow-toggle cursor-pointer list-none font-mono text-[11px] text-[var(--accent-soft)] transition-colors hover:text-[var(--text)]">
+        dataflow <span className="dataflow-arrow">▸</span>
+      </summary>
+      {open &&
+        (system.diagram ? (
+          <Suspense fallback={flowString}>
+            <div className="mt-3 overflow-hidden rounded border border-[var(--line)] bg-black/40">
+              <SystemDiagram diagram={system.diagram} />
+            </div>
+            {/* the diagram is visual; keep the flow readable for screen readers */}
+            <span className="sr-only">{system.flow}</span>
+            <p className="mt-1.5 font-mono text-[10px] text-[var(--text-faint)]">
+              hover a node for the design decision
+            </p>
+          </Suspense>
+        ) : (
+          flowString
+        ))}
+    </details>
   );
 }
 
@@ -34,16 +73,7 @@ function SystemCard({ system }) {
       <p className="mt-3 text-[14px] leading-relaxed text-[var(--text-soft)]">
         {system.blurb}
       </p>
-      <details className="mt-4">
-        <summary className="dataflow-toggle cursor-pointer list-none font-mono text-[11px] text-[var(--accent-soft)] transition-colors hover:text-[var(--text)]">
-          dataflow <span className="dataflow-arrow">▸</span>
-        </summary>
-        <div className="mt-3 overflow-x-auto rounded border border-[var(--line)] bg-black/40 px-3 py-2.5">
-          <code className="whitespace-nowrap font-mono text-[11.5px] text-[var(--text-soft)]">
-            {system.flow}
-          </code>
-        </div>
-      </details>
+      <Dataflow system={system} />
       <div className="mt-4 flex flex-wrap gap-1.5">
         {system.stack.map((s) => (
           <span

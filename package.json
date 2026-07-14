@@ -10,6 +10,7 @@
     "sync-resume": "node scripts/sync-resume.mjs"
   },
   "dependencies": {
+    "@xyflow/react": "^12.11.2",
     "lucide-react": "^0.525.0",
     "motion": "^12.42.2",
     "ogl": "^1.0.11",
