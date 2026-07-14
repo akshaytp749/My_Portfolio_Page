@@ -81,7 +81,7 @@ Replace the mono dataflow strings in Systems cards with real diagrams:
 - [x] Prompt test: run the top ~20 recruiter/hiring-manager questions against the live agent
       (incl. "what's his weakness?", salary, injection attempts) and tune AGENT_SYSTEM_PROMPT
 - [x] Vercel Analytics (free) — learn whether visitors actually use the terminal
-- [ ] Make the portfolio repo public; set the repo URL in `resume.js` so the footer
+- [x] Make the portfolio repo public; set the repo URL in `resume.js` so the footer
       "view source ↗" link renders (verify no key ever entered git history first)
 - [ ] Deploy to Vercel; set `LLM_API_KEY` (+ optional `LLM_BASE_URL`/`LLM_MODEL`) env vars; verify `/api/chat` in prod
 - [ ] Custom domain (optional)
