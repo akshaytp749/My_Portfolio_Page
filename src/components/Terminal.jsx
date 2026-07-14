@@ -144,7 +144,7 @@ export default function Terminal() {
     <div
       onPointerDownCapture={markInteracted}
       onKeyDownCapture={markInteracted}
-      className="relative overflow-hidden rounded-xl border border-[var(--term-line)] bg-[var(--term)] shadow-[0_0_45px_rgba(245,166,35,0.13),0_25px_60px_-15px_rgba(0,0,0,0.5)]"
+      className="relative overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--term)] shadow-[0_0_50px_rgba(245,166,35,0.14),0_0_120px_rgba(82,39,255,0.10)]"
     >
       {/* chrome bar */}
       <div className="flex items-center gap-2 border-b border-[var(--term-line)] px-4 py-2.5">

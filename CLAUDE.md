@@ -41,56 +41,64 @@ api/
 
 ## Design system (do not drift without asking)
 
-Concept: quiet editorial light page (the human) contrasted with ONE dark
-amber-phosphor terminal (the machine). The terminal is the only loud element.
-Do NOT turn the whole site dark, and do not add purple/blue "AI gradient" styling.
+Concept (v2, chosen by Akshay): **ReactBits showcase dark** — the whole site is a
+near-black violet stage (like reactbits.dev itself): WebGL veil hero, gradient +
+shiny text, glassy cards. Inside that stage the terminal keeps its own amber
+phosphor identity — the one warm artifact on a cool page. Do NOT drift back to a
+light theme, and do not restyle the terminal internals violet.
 
 Colors (define as CSS vars in `src/index.css`):
 
-| token        | hex      | use                          |
-|--------------|----------|------------------------------|
-| paper        | #F5F6F3  | page background              |
-| panel        | #FFFFFF  | cards, footer band           |
-| ink          | #171D1A  | headings, primary text       |
-| ink-soft     | #4A544F  | body text                    |
-| ink-faint    | #8A938E  | captions, meta               |
-| line         | #DDE1DC  | borders, dividers            |
-| term         | #12100C  | terminal background          |
-| term-line    | #2A251C  | terminal borders             |
-| term-text    | #E8E3D8  | terminal user text           |
-| term-dim     | #7A7263  | terminal boot/status lines   |
-| term-answer  | #D9CFAE  | terminal agent answers       |
-| amber        | #B45309  | accent on light backgrounds  |
-| amber-bright | #F5A623  | accent inside the terminal   |
-| amber-dim    | #8A6A2F  | agent prompt prefix          |
+| token        | value                  | use                            |
+|--------------|------------------------|--------------------------------|
+| bg           | #060010                | page background (violet-black) |
+| panel        | rgba(255,255,255,0.04) | glass cards, chips             |
+| line         | rgba(255,255,255,0.10) | borders, dividers              |
+| text         | #F4F4F8                | headings, primary text         |
+| text-soft    | #B8B8C8                | body text                      |
+| text-faint   | #74748C                | captions, meta                 |
+| accent       | #5227FF                | primary violet (spotlights)    |
+| accent-soft  | #B497CF                | eyebrows, links, focus rings   |
+| accent-pink  | #FF9FFC                | metrics, hover pops            |
+| term         | #12100C                | terminal background            |
+| term-line    | #2A251C                | terminal inner borders         |
+| term-text    | #E8E3D8                | terminal user text             |
+| term-dim     | #7A7263                | terminal boot/status lines     |
+| term-answer  | #D9CFAE                | terminal agent answers         |
+| amber        | #B45309                | terminal accent (reserved)     |
+| amber-bright | #F5A623                | accent inside the terminal     |
+| amber-dim    | #8A6A2F                | agent prompt prefix            |
 
-Type: Instrument Serif (display; weight 400 only, never bold; italic for the accent
-phrase) · Inter (body) · IBM Plex Mono (terminal, eyebrows, labels, metrics, chips).
-Load from Google Fonts in `index.html`.
+The accent trio (#5227FF / #FF9FFC / #B497CF) is GradientText's default palette —
+keep them in sync if either changes.
 
-Layout: max-width 1120px, generous whitespace. Hero = headline left / terminal right,
-stacking on mobile. Eyebrow labels: mono, 11px, letter-spacing 0.18em, uppercase, amber.
+Type: Inter (headings 600/700 tracking-tight, body 400/500) · IBM Plex Mono
+(terminal, eyebrows, labels, metrics, chips). Load from Google Fonts in `index.html`.
+No serif anywhere (the old Instrument Serif editorial look is retired).
+
+Layout: max-width 1120px. Hero = headline left / terminal right, stacking on mobile.
+Eyebrow labels: mono, 11px, letter-spacing 0.18em, uppercase, accent-soft.
 
 Motion budget: one orchestrated page-load moment (the terminal boot), scroll reveals,
 hover micro-interactions. Max ONE background effect + ONE text effect site-wide.
 Everything must respect `prefers-reduced-motion`.
 
-Locked effect picks (ReactBits, reactbits.dev — copy-paste JSX + Tailwind; do not
-substitute without asking):
+Locked effect picks (ReactBits via the shadcn MCP / `@react-bits` registry, JS-TW
+variants vendored in `src/components/reactbits/`; do not substitute without asking):
 
-- Background (the ONE): **Particles** — hero only, sparse, amber #B45309 at low
-  opacity. Should read as dust in lamplight on the paper background; it must never
-  compete with the terminal.
-- Text effect (the ONE): **Decrypted Text** — hero headline's italic accent phrase
-  only. Characters scramble→resolve like terminal output; the agent theme leaking
-  into the editorial page.
-- Micro-interactions (allowed, don't count against the budget): **Spotlight Card**
-  (amber spotlight) on Systems cards · **Count Up** on metrics · optional **Magnet**
-  on the footer email link only.
+- Background (the ONE): **DarkVeil** — hero only, subtle settings (low noise/scanline,
+  warpAmount ~0.15), with a bottom gradient fade into --bg so it melts into the page.
+- Text effect (the ONE): **GradientText** — hero headline accent phrase + footer
+  headline line 2. Default palette. **ShinyText** on the hero role line is the
+  allowed micro-companion. (Vendored GradientText has mx-auto/cursor-pointer
+  stripped so it behaves as an inline heading span.)
+- Micro-interactions (don't count against the budget): **Spotlight Card** (violet
+  spotlight, glass default) on Systems cards · **Count Up** on metrics.
 - Terminal CRT scanlines + amber glow are hand-written CSS (repeating-linear-gradient
-  + box-shadow), never a library component.
-- Banned: Aurora, Ballpit, Letter Glitch, any gradient-heavy background, any second
-  text effect anywhere.
+  + box-shadow), never a library component. Terminal outer glow = amber + faint
+  violet ambient; internals stay amber phosphor.
+- Banned: Ballpit, Letter Glitch, any light-theme drift, a second background effect,
+  a third text effect. (Particles + DecryptedText were v1; removed, don't reintroduce.)
 
 ## Conventions
 

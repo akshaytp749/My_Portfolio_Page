@@ -1,12 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --paper: #f5f6f3;
-  --panel: #ffffff;
-  --ink: #171d1a;
-  --ink-soft: #4a544f;
-  --ink-faint: #8a938e;
-  --line: #dde1dc;
+  /* stage: reactbits-showcase dark */
+  --bg: #060010;
+  --panel: rgba(255, 255, 255, 0.04);
+  --line: rgba(255, 255, 255, 0.1);
+  --text: #f4f4f8;
+  --text-soft: #b8b8c8;
+  --text-faint: #74748c;
+
+  /* accent trio (matches GradientText defaults) */
+  --accent: #5227ff;
+  --accent-soft: #b497cf;
+  --accent-pink: #ff9ffc;
+
+  /* the machine: amber phosphor terminal, unchanged identity */
   --term: #12100c;
   --term-line: #2a251c;
   --term-text: #e8e3d8;
@@ -16,30 +24,33 @@
   --amber-bright: #f5a623;
   --amber-dim: #8a6a2f;
 
-  --font-serif: "Instrument Serif", serif;
   --font-body: "Inter", system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
 
+html {
+  background: var(--bg);
+}
+
 body {
-  background: var(--paper);
-  color: var(--ink);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: var(--amber);
-  color: var(--paper);
+  background: var(--accent);
+  color: #fff;
 }
 
-/* eyebrow labels: mono 11px, tracked, uppercase, amber */
+/* eyebrow labels: mono 11px, tracked, uppercase */
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 11px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--amber);
+  color: var(--accent-soft);
 }
 
 @keyframes blink {
@@ -95,7 +106,7 @@ details[open] .dataflow-arrow {
 
 /* focus visibility everywhere */
 :focus-visible {
-  outline: 2px solid var(--amber);
+  outline: 2px solid var(--accent-soft);
   outline-offset: 2px;
 }
 

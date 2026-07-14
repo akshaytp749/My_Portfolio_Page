@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(180, 83, 9, 0.10)' }) => {
+const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(82, 39, 255, 0.22)' }) => {
   const divRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -39,7 +39,7 @@ const SpotlightCard = ({ children, className = '', spotlightColor = 'rgba(180, 8
       onBlur={handleBlur}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--panel)] ${className}`}
+      className={`relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--panel)] backdrop-blur-sm ${className}`}
     >
       <div
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 ease-in-out"

@@ -8,28 +8,25 @@ const links = [
 
 export default function Nav() {
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[var(--paper)]/90 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[#060010]/70 backdrop-blur-md">
       <nav className="mx-auto flex max-w-[1120px] items-center justify-between px-5 py-4">
-        <a
-          href="#top"
-          className="font-[var(--font-serif)] text-lg text-[var(--ink)]"
-          style={{ fontFamily: "var(--font-serif)" }}
-        >
+        <a href="#top" className="text-[15px] font-semibold tracking-tight text-[var(--text)]">
           {identity.name}
+          <span className="ml-1 text-[var(--accent-pink)]">✦</span>
         </a>
         <div className="flex items-center gap-5">
           {links.map((l) => (
             <a
               key={l.href}
               href={l.href}
-              className="hidden font-mono text-[12px] text-[var(--ink-soft)] transition-colors hover:text-[var(--amber)] sm:inline"
+              className="hidden font-mono text-[12px] text-[var(--text-soft)] transition-colors hover:text-[var(--text)] sm:inline"
             >
               {l.label}
             </a>
           ))}
           <a
             href={`mailto:${identity.email}`}
-            className="font-mono text-[12px] text-[var(--amber)] transition-colors hover:text-[var(--ink)]"
+            className="rounded-full border border-[var(--line)] bg-[var(--panel)] px-3.5 py-1.5 font-mono text-[12px] text-[var(--text)] transition-colors hover:border-[var(--accent-soft)]"
           >
             email ↗
           </a>
