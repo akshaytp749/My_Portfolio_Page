@@ -120,6 +120,25 @@ variants vendored in `src/components/reactbits/`; do not substitute without aski
 - Akshay's phone number never appears anywhere in site code or content (PDF only).
 - Commit after each completed PLAN.md checkbox: `p1: terminal CRT polish`.
 
+## Content refresh playbooks
+
+### New resume PDF
+1. Drop the new PDF anywhere in the repo root (any filename ending `.pdf`).
+2. `npm run sync-resume` — copies the newest root PDF to `public/Akshay_Thomas_Resume.pdf`.
+3. Sync the facts: update `src/data/resume.js` (systems, skills, awards, dates) AND
+   `AGENT_SYSTEM_PROMPT` in the same pass — they must never diverge. The phone
+   number stays out of both, and out of Appendix A below.
+4. If agent facts changed, re-run the Phase 4 top-20-questions prompt test.
+
+### GitHub freshness (planned — PLAN.md Phase 4)
+Build-time only, never from the client: `scripts/fetch-github.mjs` (prebuild) hits
+the public GitHub API for `akshaytp749` (no token needed at this volume) and writes
+`src/data/github.json` — stars, description, and last-push date for the project
+repos. `Projects.jsx` merges that over the static `projects` entries so descriptions
+in `resume.js` stay canonical but freshness (stars / "updated 3d ago") is live as of
+the last deploy. A failed fetch must not fail the build — fall back to the committed
+`github.json`.
+
 ## Gotchas
 
 - Tailwind v4: `@tailwindcss/vite` plugin + `@import "tailwindcss"` in index.css.

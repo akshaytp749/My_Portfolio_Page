@@ -71,6 +71,9 @@ Replace the mono dataflow strings in Systems cards with real diagrams:
 
 ## Phase 4 — Content, SEO, deploy
 
+- [ ] `scripts/fetch-github.mjs` as a prebuild step: public GitHub API → `src/data/github.json`
+      (stars, last-push for the project repos); `Projects.jsx` merges it for freshness badges;
+      build must not fail if the API is unreachable (use committed fallback)
 - [ ] Meta tags, OpenGraph image (a terminal-screenshot OG card works well)
 - [ ] Favicon (amber ▸ on dark square)
 - [ ] sitemap.xml + robots.txt
