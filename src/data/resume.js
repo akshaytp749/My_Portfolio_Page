@@ -15,8 +15,8 @@ export const identity = {
   github: "https://github.com/akshaytp749",
   linkedin: "https://linkedin.com/in/AkshayThomas",
   resumePdf: "/Akshay_Thomas_Resume.pdf",
-  // set once the portfolio repo is public (Phase 4); footer renders "view source" only when non-empty
-  sourceRepo: "",
+  // footer renders "view source" only when non-empty
+  sourceRepo: "https://github.com/akshaytp749/My_Portfolio_Page",
 };
 
 export const bootLines = [

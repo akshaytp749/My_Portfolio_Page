@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/fetch-github.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "sync-resume": "node scripts/sync-resume.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "@xyflow/react": "^12.11.2",
     "lucide-react": "^0.525.0",
     "motion": "^12.42.2",

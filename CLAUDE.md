@@ -159,6 +159,10 @@ the last deploy. A failed fetch must not fail the build — fall back to the com
   plain text (`supportsResponseStreaming: true`); the client reads `res.body`
   directly in `askAgentStream`. The demo/fallback path still uses the simulated
   word-by-word reveal.
+- Groq free tier is limited per-MINUTE: 12k tokens/min for llama-3.3-70b, and the
+  system prompt costs ~1k tokens per request → ~11 requests/min ceiling. Bursts 429
+  → client falls back to demo answers (graceful, by design). If traffic ever matters,
+  switch LLM_MODEL to a smaller model or move providers via env.
 - This is a public LLM endpoint — expect prompt-injection attempts. Defenses: the
   stay-in-character rule in AGENT_SYSTEM_PROMPT, hard max_tokens cap, turn cap,
   message length caps. Nothing secret lives in the prompt, so the blast radius is

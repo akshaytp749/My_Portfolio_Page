@@ -1,5 +1,16 @@
 import { projects } from "../data/resume.js";
+import github from "../data/github.json";
 import Reveal from "./Reveal.jsx";
+
+// "updated 4d ago" / "updated 3mo ago" — freshness as of the last deploy
+function timeAgo(iso) {
+  if (!iso) return null;
+  const days = Math.max(0, Math.floor((Date.now() - new Date(iso)) / 86400000));
+  if (days === 0) return "updated today";
+  if (days < 30) return `updated ${days}d ago`;
+  if (days < 365) return `updated ${Math.floor(days / 30)}mo ago`;
+  return `updated ${Math.floor(days / 365)}y ago`;
+}
 
 export default function Projects() {
   return (
@@ -27,7 +38,11 @@ export default function Projects() {
                   ↗
                 </span>
               </div>
-              <p className="mt-1 font-mono text-[11px] text-[var(--text-faint)]">{p.repo}</p>
+              <p className="mt-1 font-mono text-[11px] text-[var(--text-faint)]">
+                {p.repo}
+                {github[p.repo]?.stars > 0 && ` · ★ ${github[p.repo].stars}`}
+                {github[p.repo]?.pushedAt && ` · ${timeAgo(github[p.repo].pushedAt)}`}
+              </p>
               <p className="mt-3 text-[13.5px] leading-relaxed text-[var(--text-soft)]">
                 {p.description}
               </p>
