@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { bootLines, suggestions } from "../data/resume.js";
-import { askAgent, localAnswer } from "../lib/agent.js";
+import { bootLines, suggestions, identity } from "../data/resume.js";
+import { askAgentStream, localAnswer } from "../lib/agent.js";
 
 const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -9,6 +9,7 @@ const BOOT_LINE_DELAY_MS = 420;
 const TYPE_TICK_MS = 24;
 const DEMO_DELAY_MS = 4000;
 const DEMO_KEYSTROKE_MS = 38;
+const MAX_USER_TURNS = 10;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -29,6 +30,7 @@ export default function Terminal() {
   const [busy, setBusy] = useState(false);
   const [pending, setPending] = useState(false); // waiting for an answer (not typing/streaming)
   const [demoNoted, setDemoNoted] = useState(false);
+  const [mode, setMode] = useState(null); // null | "live" | "demo" — set by real asks only
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
   const interactedRef = useRef(false); // any click/keypress kills the auto-demo
@@ -114,6 +116,20 @@ export default function Terminal() {
     const q = question.trim();
     if (!q || busy || !booted) return;
     setInput("");
+
+    const userTurns = entries.filter((e) => e.kind === "user").length;
+    if (userTurns >= MAX_USER_TURNS) {
+      setEntries((prev) => [
+        ...prev,
+        { kind: "user", text: q },
+        {
+          kind: "note",
+          text: `(session limit reached — email ${identity.email} and Akshay will answer the rest himself)`,
+        },
+      ]);
+      return;
+    }
+
     setBusy(true);
 
     const history = [];
@@ -125,17 +141,32 @@ export default function Terminal() {
 
     setEntries((prev) => [...prev, { kind: "user", text: q }]);
     setPending(true);
-    const { text, demo } = await askAgent(history);
-    setPending(false);
-    if (demo && !demoNoted) {
-      setDemoNoted(true);
-      setEntries((prev) => [
-        ...prev,
-        { kind: "note", text: "(demo mode — answering from the local index, not the live model)" },
-      ]);
-    }
     demoCancelRef.current = false;
-    await revealAnswer("answer", text);
+
+    // real token stream from the backend; callbacks never fire on fallback
+    const { text, demo } = await askAgentStream(history, {
+      onStart: () => {
+        setPending(false);
+        setEntries((prev) => [...prev, { kind: "answer", text: "" }]);
+      },
+      onToken: (full) => appendToLast("answer", full),
+    });
+
+    if (demo) {
+      setPending(false);
+      setMode("demo");
+      if (!demoNoted) {
+        setDemoNoted(true);
+        setEntries((prev) => [
+          ...prev,
+          { kind: "note", text: "(demo mode — answering from the local index, not the live model)" },
+        ]);
+      }
+      await revealAnswer("answer", text);
+    } else {
+      setMode("live");
+      appendToLast("answer", text); // ensure the final full text landed
+    }
     setBusy(false);
     inputRef.current?.focus();
   };
@@ -152,7 +183,7 @@ export default function Terminal() {
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--term-line)]" />
         <span className="h-2.5 w-2.5 rounded-full bg-[var(--term-line)]" />
         <span className="ml-2 font-mono text-[11px] text-[var(--term-dim)]">
-          akshay-agent — live
+          akshay-agent{mode === "live" ? " — live" : mode === "demo" ? " — demo" : ""}
         </span>
         <span
           className={`ml-auto h-1.5 w-1.5 rounded-full bg-[var(--amber-bright)] ${booted ? "pulse-dot" : ""}`}

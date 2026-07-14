@@ -6,7 +6,7 @@ export default function Footer() {
   const reduce = useReducedMotion();
 
   return (
-    <footer className="border-t border-[var(--line)] bg-white/[0.02]">
+    <footer className="glow-pink border-t border-[var(--line)] bg-white/[0.02]">
       <div className="mx-auto max-w-[1120px] px-5 py-16">
         <h2 className="text-4xl font-bold leading-[1.15] tracking-tight text-[var(--text)]">
           {footer.headline.line1}

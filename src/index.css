@@ -7,7 +7,7 @@
   --line: rgba(255, 255, 255, 0.1);
   --text: #f4f4f8;
   --text-soft: #b8b8c8;
-  --text-faint: #74748c;
+  --text-faint: #8a8aa6; /* keeps ≥4.5:1 on --bg — don't darken */
 
   /* accent trio (matches GradientText defaults) */
   --accent: #5227ff;
@@ -80,6 +80,23 @@ body {
 
 .pulse-dot {
   animation: pulse-dot 2.4s ease-in-out infinite;
+}
+
+/* faint ambient glows so the page doesn't fall off a tonal cliff after the hero.
+   Decoration on sections, not a background effect — keep opacity ≤ 0.06 */
+.glow-violet {
+  background-image: radial-gradient(
+    640px 420px at 82% 0%,
+    rgba(82, 39, 255, 0.055),
+    transparent 70%
+  );
+}
+.glow-pink {
+  background-image: radial-gradient(
+    640px 420px at 12% 100%,
+    rgba(255, 159, 252, 0.04),
+    transparent 70%
+  );
 }
 
 /* CSS-only CRT: scanlines + corner vignette over the terminal */

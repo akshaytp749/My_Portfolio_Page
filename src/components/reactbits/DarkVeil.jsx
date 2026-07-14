@@ -121,10 +121,19 @@ export default function DarkVeil({
     window.addEventListener('resize', resize);
     resize();
 
-    const start = performance.now();
+    // seeded back 8s so the initial (possibly paused) frame isn't the t=0 dark state
+    const start = performance.now() - 8000;
     let frame = 0;
+    // pause the render loop when the canvas is offscreen or the tab is hidden —
+    // a hero background must not cost battery while nobody can see it
+    let inView = true;
+    let running = false;
 
     const loop = () => {
+      if (!inView || document.hidden) {
+        running = false;
+        return;
+      }
       program.uniforms.uTime.value = ((performance.now() - start) / 1000) * speed;
       program.uniforms.uHueShift.value = hueShift;
       program.uniforms.uNoise.value = noiseIntensity;
@@ -135,10 +144,33 @@ export default function DarkVeil({
       frame = requestAnimationFrame(loop);
     };
 
+    const wake = () => {
+      if (!running && inView && !document.hidden) {
+        running = true;
+        frame = requestAnimationFrame(loop);
+      }
+    };
+
+    const observer = new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+      wake();
+    });
+    observer.observe(canvas);
+
+    const onVisibility = () => wake();
+    document.addEventListener('visibilitychange', onVisibility);
+
+    // paint one frame unconditionally (hidden tabs, prerender, OG capture),
+    // then hand off to the visibility-aware loop
+    program.uniforms.uTime.value = ((performance.now() - start) / 1000) * speed;
+    renderer.render({ scene: mesh });
+    running = true;
     loop();
 
     return () => {
       cancelAnimationFrame(frame);
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('resize', resize);
     };
   }, [hueShift, noiseIntensity, scanlineIntensity, speed, scanlineFrequency, warpAmount, resolutionScale]);

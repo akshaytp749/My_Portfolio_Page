@@ -27,7 +27,7 @@ export default function Hero() {
               <ShinyText
                 text={identity.roleLine}
                 className="eyebrow"
-                color="#b497cf"
+                color="#dcd6f0"
                 shineColor="#ffffff"
                 speed={4}
               />

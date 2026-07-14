@@ -152,9 +152,13 @@ the last deploy. A failed fetch must not fail the build — fall back to the com
   messages (roles, string content, length caps, last must be user). No Anthropic key
   needed anywhere.
 - Vercel functions are stateless: in-memory rate limiting resets on every cold start
-  and doesn't share state across instances. Use Upstash Redis (free tier) for per-IP
-  limits, plus an Origin/Referer allowlist check in `api/chat.js` so other sites
-  can't embed the endpoint and burn credits.
+  and doesn't share state across instances. `api/chat.js` uses Upstash Redis REST
+  (per-IP, 30 req/10 min, fail-open) + an `ALLOWED_ORIGINS` allowlist — both skipped
+  when their env vars are unset (local dev).
+- `api/chat.js` streams: provider SSE is parsed server-side and passed through as
+  plain text (`supportsResponseStreaming: true`); the client reads `res.body`
+  directly in `askAgentStream`. The demo/fallback path still uses the simulated
+  word-by-word reveal.
 - This is a public LLM endpoint — expect prompt-injection attempts. Defenses: the
   stay-in-character rule in AGENT_SYSTEM_PROMPT, hard max_tokens cap, turn cap,
   message length caps. Nothing secret lives in the prompt, so the blast radius is
@@ -189,7 +193,7 @@ the last deploy. A failed fetch must not fail the build — fall back to the com
 ```
 $ ./akshay-agent --init                                              (cmd style)
 loading profile ............... ok                                   (dim)
-mounting resume index ......... ok  (24 chunks)                      (dim)
+mounting resume index ......... ok                                   (dim)
 registering tools ............. [experience] [projects] [contact]    (dim)
 agent online. ask me anything about Akshay's work.                   (highlight)
 ```
@@ -263,7 +267,7 @@ ebonding across Workday, NetSuite, Salesforce & Jira"
 Headline: "The agent answered your questions. / *Akshay answers email.*"
 Links: email, github, linkedin, resume PDF download.
 Small print: "how this site works: React · the hero terminal calls a live LLM with my
-resume as grounding context and streams the reply token-by-token · built with AI
+resume as grounding context and streams the reply into the terminal · built with AI
 coding tools, reviewed by a human · view source ↗" (view-source links the public
 portfolio repo once it exists — Phase 4; render the link only when the URL is set
 in `resume.js`).

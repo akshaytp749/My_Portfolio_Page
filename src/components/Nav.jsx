@@ -26,7 +26,7 @@ export default function Nav() {
           ))}
           <a
             href={`mailto:${identity.email}`}
-            className="rounded-full border border-[var(--line)] bg-[var(--panel)] px-3.5 py-1.5 font-mono text-[12px] text-[var(--text)] transition-colors hover:border-[var(--accent-soft)]"
+            className="font-mono text-[12px] text-[var(--accent-soft)] transition-colors hover:text-[var(--text)]"
           >
             email ↗
           </a>

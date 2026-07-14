@@ -52,12 +52,12 @@ Rule of restraint: max ONE background effect + ONE text effect site-wide.
 
 ## Phase 2 — Real streaming chat backend
 
-- [ ] Upgrade `api/chat.js` to stream (`stream: true` on the OpenAI-compatible endpoint → SSE passthrough)
-- [ ] Update `src/lib/agent.js` + Terminal to consume the stream (replace simulated token reveal)
-- [ ] Rate limiting via Upstash Redis free tier (in-memory does NOT work — Vercel functions
+- [x] Upgrade `api/chat.js` to stream (`stream: true` on the OpenAI-compatible endpoint → SSE passthrough)
+- [x] Update `src/lib/agent.js` + Terminal to consume the stream (replace simulated token reveal)
+- [x] Rate limiting via Upstash Redis free tier (in-memory does NOT work — Vercel functions
       are stateless across instances/cold starts) + Origin/Referer allowlist check — this
       endpoint spends real API credits
-- [ ] Max-turns cap per session (e.g. 10) with a friendly "email Akshay instead" message
+- [x] Max-turns cap per session (e.g. 10) with a friendly "email Akshay instead" message
 - [x] Provider is already env-swappable (Groq/OpenRouter/Gemini free tiers, OpenAI-compatible) — done in Phase 0
 
 ## Phase 3 — Interactive architecture diagrams

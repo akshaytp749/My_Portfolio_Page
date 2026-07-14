@@ -22,7 +22,7 @@ export const identity = {
 export const bootLines = [
   { type: "cmd", text: "$ ./akshay-agent --init" },
   { type: "dim", text: "loading profile ............... ok" },
-  { type: "dim", text: "mounting resume index ......... ok  (24 chunks)" },
+  { type: "dim", text: "mounting resume index ......... ok" },
   {
     type: "dim",
     text: "registering tools ............. [experience] [projects] [contact]",
@@ -145,7 +145,7 @@ export const footer = {
     line2: "Akshay answers email.", // italic accent line
   },
   smallPrint:
-    "how this site works: React · the hero terminal calls a live LLM with my resume as grounding context and streams the reply token-by-token · built with AI coding tools, reviewed by a human",
+    "how this site works: React · the hero terminal calls a live LLM with my resume as grounding context and streams the reply into the terminal · built with AI coding tools, reviewed by a human",
 };
 
 export const AGENT_SYSTEM_PROMPT = `You are the portfolio agent running on Akshay Thomas's personal website. Visitors (often recruiters and engineers) type questions into a terminal and you answer.

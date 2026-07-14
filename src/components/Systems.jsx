@@ -60,7 +60,7 @@ function SystemCard({ system }) {
 
 export default function Systems() {
   return (
-    <section id="systems" className="mx-auto max-w-[1120px] px-5 py-20">
+    <section id="systems" className="glow-violet mx-auto max-w-[1120px] px-5 py-20">
       <Reveal>
         <p className="eyebrow">Production systems</p>
         <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--text)]">
@@ -78,7 +78,7 @@ export default function Systems() {
         <p className="mt-8 text-[13px] leading-relaxed text-[var(--text-faint)]">
           {systemsFootnote}
         </p>
-        <p className="mt-4 font-mono text-[11px] tracking-wide text-[var(--text-faint)]">
+        <p className="mt-4 font-mono text-[11px] tracking-wide text-[var(--text-soft)]">
           {signals}
         </p>
       </Reveal>
