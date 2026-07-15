@@ -156,6 +156,11 @@ the last deploy. A failed fetch must not fail the build — fall back to the com
   plain text (`supportsResponseStreaming: true`); the client reads `res.body`
   directly in `askAgentStream`. The demo/fallback path still uses the simulated
   word-by-word reveal.
+- Live Q/A pairs are logged to Upstash (`log:YYYY-MM-DD` lists, 45-day TTL,
+  best-effort, awaited before `res.end()` because serverless freezes after the
+  response closes). Disclosed in the footer small print. Read with `npm run logs
+  [date|yesterday]`. Demo-mode answers never reach the server, so they're never
+  logged.
 - Groq free tier is limited per-MINUTE: 12k tokens/min for llama-3.3-70b, and the
   system prompt costs ~1k tokens per request → ~11 requests/min ceiling. Bursts 429
   → client falls back to demo answers (graceful, by design). If traffic ever matters,
@@ -268,8 +273,9 @@ ebonding across Workday, NetSuite, Salesforce & Jira"
 Headline: "The agent answered your questions. / *Akshay answers email.*"
 Links: email, github, linkedin, resume PDF download.
 Small print: "how this site works: React · the hero terminal calls a live LLM with my
-resume as grounding context and streams the reply into the terminal · built with AI
-coding tools, reviewed by a human · view source ↗" (view-source links the public
+resume as grounding context and streams the reply into the terminal · conversations
+may be logged to improve the agent · built with AI coding tools, reviewed by a human
+· view source ↗" (view-source links the public
 portfolio repo once it exists — Phase 4; render the link only when the URL is set
 in `resume.js`).
 

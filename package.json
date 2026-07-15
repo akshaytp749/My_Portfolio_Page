@@ -8,7 +8,8 @@
     "prebuild": "node scripts/fetch-github.mjs",
     "build": "vite build",
     "preview": "vite preview",
-    "sync-resume": "node scripts/sync-resume.mjs"
+    "sync-resume": "node scripts/sync-resume.mjs",
+    "logs": "node scripts/read-logs.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",

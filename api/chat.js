@@ -8,6 +8,7 @@ const MAX_TOKENS = 600;
 const MAX_MESSAGES = 20; // ~10 user turns
 const MAX_CONTENT_CHARS = 1200;
 const RATE_LIMIT_PER_10_MIN = 30;
+const LOG_TTL_SECONDS = 60 * 60 * 24 * 45; // logs self-delete after 45 days
 
 // streamed plain-text response; the client reads res.body directly
 export const config = { supportsResponseStreaming: true };
@@ -58,6 +59,32 @@ async function rateLimited(req) {
   } catch (err) {
     console.error("rate limit check failed", err);
     return false; // fail open — a Redis hiccup shouldn't kill the agent
+  }
+}
+
+// Append the finished Q/A pair to a per-day Redis list (disclosed in the site
+// footer). Best-effort: skipped without Upstash env, never fails the response.
+async function logConversation(question, answer) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token || !answer.trim()) return;
+  try {
+    const key = `log:${new Date().toISOString().slice(0, 10)}`;
+    const entry = JSON.stringify({
+      t: new Date().toISOString(),
+      q: question,
+      a: answer,
+    });
+    await fetch(`${url}/pipeline`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: JSON.stringify([
+        ["RPUSH", key, entry],
+        ["EXPIRE", key, String(LOG_TTL_SECONDS), "NX"],
+      ]),
+    });
+  } catch (err) {
+    console.error("conversation log failed", err);
   }
 }
 
@@ -117,6 +144,7 @@ export default async function handler(req, res) {
     const reader = upstream.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    let reply = "";
     for (;;) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -130,12 +158,17 @@ export default async function handler(req, res) {
         if (data === "[DONE]") continue;
         try {
           const delta = JSON.parse(data).choices?.[0]?.delta?.content;
-          if (delta) res.write(delta);
+          if (delta) {
+            reply += delta;
+            res.write(delta);
+          }
         } catch {
           // partial JSON split across chunks lands back in buffer next round
         }
       }
     }
+    // awaited before end(): serverless may freeze right after the response closes
+    await logConversation(messages[messages.length - 1].content, reply);
     res.end();
   } catch (err) {
     console.error("chat handler error", err);
