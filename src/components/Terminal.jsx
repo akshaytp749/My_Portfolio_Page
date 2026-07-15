@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { bootLines, suggestions, identity } from "../data/resume.js";
 import { askAgentStream, localAnswer } from "../lib/agent.js";
+import TextType from "./reactbits/TextType.jsx";
 
 const prefersReducedMotion = () =>
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -16,10 +17,10 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const lineColors = {
   cmd: "text-[var(--term-text)]",
   dim: "text-[var(--term-dim)]",
-  highlight: "text-[var(--amber-bright)]",
+  highlight: "text-[var(--accent)]",
   user: "text-[var(--term-text)]",
   answer: "text-[var(--term-answer)]",
-  error: "text-[var(--amber-bright)]",
+  error: "text-[var(--accent)]",
   note: "text-[var(--term-dim)]",
 };
 
@@ -44,7 +45,9 @@ export default function Terminal() {
       return;
     }
     if (bootCount >= bootLines.length) return;
-    const t = setTimeout(() => setBootCount((c) => c + 1), BOOT_LINE_DELAY_MS);
+    // the first line is typed out by TextType (~1.1s) — hold the stagger for it
+    const delay = bootCount === 1 ? 1300 : BOOT_LINE_DELAY_MS;
+    const t = setTimeout(() => setBootCount((c) => c + 1), delay);
     return () => clearTimeout(t);
   }, [bootCount]);
 
@@ -175,7 +178,7 @@ export default function Terminal() {
     <div
       onPointerDownCapture={markInteracted}
       onKeyDownCapture={markInteracted}
-      className="relative overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--term)] shadow-[0_0_50px_rgba(245,166,35,0.14),0_0_120px_rgba(82,39,255,0.10)]"
+      className="relative overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--term)] shadow-[0_0_50px_rgba(245,166,35,0.12),0_25px_70px_-20px_rgba(0,0,0,0.7)]"
     >
       {/* chrome bar */}
       <div className="flex items-center gap-2 border-b border-[var(--term-line)] px-4 py-2.5">
@@ -186,7 +189,7 @@ export default function Terminal() {
           akshay-agent{mode === "live" ? " — live" : mode === "demo" ? " — demo" : ""}
         </span>
         <span
-          className={`ml-auto h-1.5 w-1.5 rounded-full bg-[var(--amber-bright)] ${booted ? "pulse-dot" : ""}`}
+          className={`ml-auto h-1.5 w-1.5 rounded-full bg-[var(--accent)] ${booted ? "pulse-dot" : ""}`}
           aria-hidden="true"
         />
       </div>
@@ -199,7 +202,18 @@ export default function Terminal() {
       >
         {bootLines.slice(0, bootCount).map((line, i) => (
           <div key={`boot-${i}`} className={lineColors[line.type]}>
-            {line.text}
+            {i === 0 && !prefersReducedMotion() ? (
+              <TextType
+                as="span"
+                text={[line.text]}
+                typingSpeed={26}
+                loop={false}
+                showCursor={false}
+                startOnVisible
+              />
+            ) : (
+              line.text
+            )}
           </div>
         ))}
         {entries.map((e, i) => (
@@ -208,14 +222,14 @@ export default function Terminal() {
               <span className="text-[var(--term-dim)]">$ </span>
             )}
             {e.kind === "answer" && (
-              <span className="text-[var(--amber-dim)]">▸ </span>
+              <span className="text-[var(--accent-dim)]">▸ </span>
             )}
             {e.text}
           </div>
         ))}
         {pending && (
           <div className="mt-2 text-[var(--term-dim)]">
-            <span className="text-[var(--amber-dim)]">▸ </span>
+            <span className="text-[var(--accent-dim)]">▸ </span>
             thinking<span className="cursor-blink">…</span>
           </div>
         )}
@@ -229,7 +243,7 @@ export default function Terminal() {
           ask(input);
         }}
       >
-        <span className="font-mono text-[13px] text-[var(--amber-bright)]" aria-hidden="true">
+        <span className="font-mono text-[13px] text-[var(--accent)]" aria-hidden="true">
           ❯
         </span>
         <input
@@ -237,7 +251,7 @@ export default function Terminal() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           disabled={!booted || busy}
-          placeholder={booted ? "ask about Akshay's work…" : "booting…"}
+          placeholder={booted ? "type a question…" : "booting…"}
           aria-label="Ask the agent about Akshay's work"
           className="flex-1 bg-transparent font-mono text-[13px] text-[var(--term-text)] placeholder-[var(--term-dim)] outline-none disabled:opacity-50"
         />
@@ -254,7 +268,7 @@ export default function Terminal() {
             type="button"
             onClick={() => ask(s)}
             disabled={!booted || busy}
-            className="rounded-full border border-[var(--term-line)] px-3 py-1.5 font-mono text-[11px] text-[var(--term-dim)] transition-colors hover:border-[var(--amber-dim)] hover:text-[var(--term-answer)] disabled:opacity-40"
+            className="rounded-full border border-[var(--term-line)] px-3 py-1.5 font-mono text-[11px] text-[var(--term-dim)] transition-colors hover:border-[var(--accent-dim)] hover:text-[var(--term-answer)] disabled:opacity-40"
           >
             {s}
           </button>

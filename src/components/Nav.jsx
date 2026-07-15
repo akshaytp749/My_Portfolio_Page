@@ -8,11 +8,15 @@ const links = [
 
 export default function Nav() {
   return (
-    <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[#060010]/70 backdrop-blur-md">
+    <header className="sticky top-0 z-20 border-b border-[var(--line)] bg-[#0b0c0e]/80 backdrop-blur-md">
       <nav className="mx-auto flex max-w-[1120px] items-center justify-between px-5 py-4">
-        <a href="#top" className="text-[15px] font-semibold tracking-tight text-[var(--text)]">
+        <a
+          href="#top"
+          className="text-[15px] font-semibold tracking-tight text-[var(--text)]"
+          style={{ fontFamily: "var(--font-display)" }}
+        >
           {identity.name}
-          <span className="ml-1 text-[var(--accent-pink)]">✦</span>
+          <span className="ml-1 text-[var(--accent)]" aria-hidden="true">_</span>
         </a>
         <div className="flex items-center gap-5">
           {links.map((l) => (
@@ -26,7 +30,7 @@ export default function Nav() {
           ))}
           <a
             href={`mailto:${identity.email}`}
-            className="font-mono text-[12px] text-[var(--accent-soft)] transition-colors hover:text-[var(--text)]"
+            className="font-mono text-[12px] text-[var(--accent)] transition-colors hover:text-[var(--text)]"
           >
             email ↗
           </a>

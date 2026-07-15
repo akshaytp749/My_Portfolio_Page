@@ -12,11 +12,11 @@ function Metric({ metric }) {
   const reduce = useReducedMotion();
   const numeric = metric.match(/^(\d+)(.*)$/);
   if (!numeric || reduce) {
-    return <span className="font-mono text-3xl text-[var(--accent-pink)]">{metric}</span>;
+    return <span className="font-mono text-3xl text-[var(--accent)]">{metric}</span>;
   }
   const [, value, suffix] = numeric;
   return (
-    <span className="font-mono text-3xl text-[var(--accent-pink)]">
+    <span className="font-mono text-3xl text-[var(--accent)]">
       <CountUp to={Number(value)} duration={1.6} />
       {suffix}
     </span>
@@ -36,7 +36,7 @@ function Dataflow({ system }) {
 
   return (
     <details className="mt-4" onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary className="dataflow-toggle cursor-pointer list-none font-mono text-[11px] text-[var(--accent-soft)] transition-colors hover:text-[var(--text)]">
+      <summary className="dataflow-toggle cursor-pointer list-none font-mono text-[11px] text-[var(--accent)] transition-colors hover:text-[var(--text)]">
         dataflow <span className="dataflow-arrow">▸</span>
       </summary>
       {open &&
@@ -90,7 +90,7 @@ function SystemCard({ system }) {
 
 export default function Systems() {
   return (
-    <section id="systems" className="glow-violet mx-auto max-w-[1120px] px-5 py-20">
+    <section id="systems" className="mx-auto max-w-[1120px] px-5 py-20">
       <Reveal>
         <p className="eyebrow">Production systems</p>
         <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--text)]">

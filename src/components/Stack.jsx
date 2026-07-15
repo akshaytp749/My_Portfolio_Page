@@ -13,7 +13,7 @@ export default function Stack() {
       <dl className="mt-10 divide-y divide-[var(--line)] border-y border-[var(--line)]">
         {stackLayers.map(({ layer, items }) => (
           <div key={layer} className="grid gap-2 py-4 sm:grid-cols-[180px_1fr] sm:gap-6">
-            <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--accent-soft)]">
+            <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-[var(--accent)]">
               {layer}
             </dt>
             <dd className="text-[14px] leading-relaxed text-[var(--text-soft)]">

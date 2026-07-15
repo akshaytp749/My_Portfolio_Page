@@ -34,9 +34,9 @@ export default function SystemDiagram({ diagram }) {
     target,
     label,
     animated: !reduce,
-    style: { stroke: "var(--accent-soft)", strokeWidth: 1.2, opacity: 0.7 },
+    style: { stroke: "var(--accent-dim)", strokeWidth: 1.2, opacity: 0.7 },
     labelStyle: { fill: "var(--text-faint)", fontFamily: "var(--font-mono)", fontSize: 9 },
-    labelBgStyle: { fill: "#060010", fillOpacity: 0.9 },
+    labelBgStyle: { fill: "#0b0c0e", fillOpacity: 0.9 },
   }));
 
   return (

@@ -28,13 +28,13 @@ export default function Projects() {
               href={p.url}
               target="_blank"
               rel="noreferrer"
-              className="group block h-full rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)]"
+              className="group block h-full rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-dim)]"
             >
               <div className="flex items-baseline justify-between gap-2">
                 <h3 className="text-lg font-semibold tracking-tight text-[var(--text)]">
                   {p.title}
                 </h3>
-                <span className="font-mono text-[11px] text-[var(--text-faint)] transition-colors group-hover:text-[var(--accent-pink)]">
+                <span className="font-mono text-[11px] text-[var(--text-faint)] transition-colors group-hover:text-[var(--accent)]">
                   ↗
                 </span>
               </div>
