@@ -1,4 +1,5 @@
 import { identity, footer } from "../data/resume.js";
+import { trackEvent, pingNotify } from "../lib/analytics.js";
 
 export default function Footer() {
   return (
@@ -12,6 +13,10 @@ export default function Footer() {
         <div className="mt-8 flex flex-wrap items-center gap-6">
           <a
             href={`mailto:${identity.email}`}
+            onClick={() => {
+              trackEvent("email_click", { where: "footer" });
+              pingNotify("email_click");
+            }}
             className="font-mono text-[12px] text-[var(--accent)] underline-offset-4 hover:underline"
           >
             {identity.email}
@@ -35,6 +40,10 @@ export default function Footer() {
           <a
             href={identity.resumePdf}
             download
+            onClick={() => {
+              trackEvent("resume_download", { where: "footer" });
+              pingNotify("resume_download");
+            }}
             className="font-mono text-[12px] text-[var(--text-soft)] transition-colors hover:text-[var(--text)]"
           >
             resume ↓

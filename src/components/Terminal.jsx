@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { bootLines, suggestions, identity } from "../data/resume.js";
 import { askAgentStream, localAnswer } from "../lib/agent.js";
+import { trackEvent } from "../lib/analytics.js";
 import TextType from "./reactbits/TextType.jsx";
 
 const prefersReducedMotion = () =>
@@ -115,10 +116,11 @@ export default function Terminal() {
     demoCancelRef.current = true; // flushes any in-flight auto-demo instantly
   };
 
-  const ask = async (question) => {
+  const ask = async (question, source = "typed") => {
     const q = question.trim();
     if (!q || busy || !booted) return;
     setInput("");
+    trackEvent("agent_question", { source }); // analytics only; content isn't sent
 
     const userTurns = entries.filter((e) => e.kind === "user").length;
     if (userTurns >= MAX_USER_TURNS) {
@@ -253,7 +255,9 @@ export default function Terminal() {
           disabled={!booted || busy}
           placeholder={booted ? "type a question…" : "booting…"}
           aria-label="Ask the agent about Akshay's work"
-          className="flex-1 bg-transparent font-mono text-[13px] text-[var(--term-text)] placeholder-[var(--term-dim)] outline-none disabled:opacity-50"
+          // 16px on mobile: iOS Safari force-zooms the page when a focused input
+          // is < 16px. 13px from sm+ keeps the desktop terminal look.
+          className="flex-1 bg-transparent font-mono text-[16px] text-[var(--term-text)] placeholder-[var(--term-dim)] outline-none disabled:opacity-50 sm:text-[13px]"
         />
         {input && !busy && (
           <span className="font-mono text-[11px] text-[var(--term-dim)]">↵</span>
@@ -266,9 +270,12 @@ export default function Terminal() {
           <button
             key={s}
             type="button"
-            onClick={() => ask(s)}
+            onClick={() => {
+              trackEvent("chip_click", { chip: s });
+              ask(s, "chip");
+            }}
             disabled={!booted || busy}
-            className="rounded-full border border-[var(--term-line)] px-3 py-1.5 font-mono text-[11px] text-[var(--term-dim)] transition-colors hover:border-[var(--accent-dim)] hover:text-[var(--term-answer)] disabled:opacity-40"
+            className="rounded-full border border-[var(--term-line)] px-3.5 py-2.5 font-mono text-[12px] text-[var(--term-dim)] transition-colors hover:border-[var(--accent-dim)] hover:text-[var(--term-answer)] disabled:opacity-40 sm:px-3 sm:py-1.5 sm:text-[11px]"
           >
             {s}
           </button>

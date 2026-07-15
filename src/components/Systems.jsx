@@ -1,6 +1,8 @@
 import { lazy, Suspense, useState } from "react";
 import { useReducedMotion } from "motion/react";
 import { systems, systemsFootnote, signals } from "../data/resume.js";
+import { useIsMobile } from "../lib/useIsMobile.js";
+import { useSectionView } from "../lib/analytics.js";
 import SpotlightCard from "./reactbits/SpotlightCard.jsx";
 import CountUp from "./reactbits/CountUp.jsx";
 import Reveal from "./Reveal.jsx";
@@ -25,6 +27,7 @@ function Metric({ metric }) {
 
 function Dataflow({ system }) {
   const [open, setOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const flowString = (
     <div className="mt-3 overflow-x-auto rounded border border-[var(--line)] bg-black/40 px-3 py-2.5">
@@ -34,13 +37,18 @@ function Dataflow({ system }) {
     </div>
   );
 
+  // On mobile show the scrollable text flow, not the diagram: React Flow shrinks
+  // to unreadable labels on a phone and its node tooltips need hover (dead on
+  // touch). Bonus: the heavy React Flow chunk never loads on mobile.
+  const useDiagram = system.diagram && !isMobile;
+
   return (
     <details className="mt-4" onToggle={(e) => setOpen(e.currentTarget.open)}>
       <summary className="dataflow-toggle cursor-pointer list-none font-mono text-[11px] text-[var(--accent)] transition-colors hover:text-[var(--text)]">
         dataflow <span className="dataflow-arrow">▸</span>
       </summary>
       {open &&
-        (system.diagram ? (
+        (useDiagram ? (
           <Suspense fallback={flowString}>
             <div className="mt-3 overflow-hidden rounded border border-[var(--line)] bg-black/40">
               <SystemDiagram diagram={system.diagram} />
@@ -89,8 +97,9 @@ function SystemCard({ system }) {
 }
 
 export default function Systems() {
+  const ref = useSectionView("systems");
   return (
-    <section id="systems" className="mx-auto max-w-[1120px] px-5 py-20">
+    <section ref={ref} id="systems" className="mx-auto max-w-[1120px] px-5 py-20">
       <Reveal>
         <p className="eyebrow">Production systems</p>
         <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--text)]">

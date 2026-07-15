@@ -1,5 +1,6 @@
 import { projects } from "../data/resume.js";
 import github from "../data/github.json";
+import { useSectionView } from "../lib/analytics.js";
 import Reveal from "./Reveal.jsx";
 
 // "updated 4d ago" / "updated 3mo ago" — freshness as of the last deploy
@@ -13,8 +14,9 @@ function timeAgo(iso) {
 }
 
 export default function Projects() {
+  const ref = useSectionView("projects");
   return (
-    <section id="projects" className="mx-auto max-w-[1120px] px-5 py-20">
+    <section ref={ref} id="projects" className="mx-auto max-w-[1120px] px-5 py-20">
       <Reveal>
         <p className="eyebrow">Personal projects</p>
         <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--text)]">

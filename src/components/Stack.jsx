@@ -1,9 +1,11 @@
 import { stackLayers } from "../data/resume.js";
+import { useSectionView } from "../lib/analytics.js";
 import Reveal from "./Reveal.jsx";
 
 export default function Stack() {
+  const ref = useSectionView("stack");
   return (
-    <section id="stack" className="mx-auto max-w-[1120px] px-5 py-20">
+    <section ref={ref} id="stack" className="mx-auto max-w-[1120px] px-5 py-20">
       <Reveal>
         <p className="eyebrow">Stack, by layer</p>
         <h2 className="mt-4 text-4xl font-bold tracking-tight text-[var(--text)]">

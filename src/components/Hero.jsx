@@ -1,11 +1,14 @@
 import { useReducedMotion } from "motion/react";
 import { identity } from "../data/resume.js";
+import { useIsMobile } from "../lib/useIsMobile.js";
+import { trackEvent, pingNotify } from "../lib/analytics.js";
 import Terminal from "./Terminal.jsx";
 import SideRays from "./reactbits/SideRays.jsx";
 import ShinyText from "./reactbits/ShinyText.jsx";
 
 export default function Hero() {
   const reduce = useReducedMotion();
+  const isMobile = useIsMobile();
 
   // overflow-clip (not overflow-hidden): on fractional-DPR displays a hidden clip
   // around the WebGL layer leaves a 1px white seam at the bottom edge during scroll;
@@ -13,8 +16,10 @@ export default function Hero() {
   return (
     <section id="top" className="relative overflow-clip">
       {/* the ONE background effect: amber SideRays from the terminal's corner —
-          the machine casting light across the graphite page */}
-      {!reduce && (
+          the machine casting light across the graphite page. Skipped on mobile
+          (fullscreen WebGL shader = jank/battery); the fixed CSS ambient in
+          index.css still carries the warm top-right glow there. */}
+      {!reduce && !isMobile && (
         <div
           className="pointer-events-none absolute inset-0"
           aria-hidden="true"
@@ -70,12 +75,20 @@ export default function Hero() {
               <a
                 href={identity.resumePdf}
                 download
+                onClick={() => {
+                  trackEvent("resume_download", { where: "hero" });
+                  pingNotify("resume_download");
+                }}
                 className="rounded-md border border-[var(--accent-dim)] bg-[var(--accent-tint)] px-5 py-2 font-mono text-[12px] text-[var(--text)] transition-colors hover:border-[var(--accent)]"
               >
                 Resume ↓
               </a>
               <a
                 href={`mailto:${identity.email}`}
+                onClick={() => {
+                  trackEvent("email_click", { where: "hero" });
+                  pingNotify("email_click");
+                }}
                 className="rounded-md border border-[var(--line)] px-5 py-2 font-mono text-[12px] text-[var(--text-soft)] transition-colors hover:border-[var(--accent-dim)] hover:text-[var(--text)]"
               >
                 Email ↗

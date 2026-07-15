@@ -1,4 +1,6 @@
 import { AGENT_SYSTEM_PROMPT } from "../src/data/resume.js";
+import { notify } from "../server/notify.mjs";
+import { clientIp, originAllowed } from "../server/http.mjs";
 
 // Any OpenAI-compatible provider works — Groq (default), OpenRouter, or Gemini.
 // Switch providers by changing env vars only; see .env.example.
@@ -25,18 +27,6 @@ function validate(messages) {
   return null;
 }
 
-// Origin/Referer allowlist so other sites can't embed the endpoint and burn
-// credits. Unset ALLOWED_ORIGINS (local dev) allows everything.
-function originAllowed(req) {
-  const allowed = (process.env.ALLOWED_ORIGINS || "")
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (allowed.length === 0) return true;
-  const source = req.headers.origin || req.headers.referer || "";
-  return allowed.some((a) => source.startsWith(a));
-}
-
 // Upstash Redis REST sliding-ish window (fixed 10-min buckets are fine at this
 // stakes level). Skipped when Upstash env vars aren't set.
 async function rateLimited(req) {
@@ -44,8 +34,7 @@ async function rateLimited(req) {
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return false;
   try {
-    const ip =
-      (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || "unknown";
+    const ip = clientIp(req);
     const res = await fetch(`${url}/pipeline`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
@@ -168,7 +157,17 @@ export default async function handler(req, res) {
       }
     }
     // awaited before end(): serverless may freeze right after the response closes
-    await logConversation(messages[messages.length - 1].content, reply);
+    const question = messages[messages.length - 1].content;
+    const ip = clientIp(req);
+    await Promise.all([
+      logConversation(question, reply),
+      // one alert per visitor per 10 min so a multi-question session ≠ 5 emails;
+      // full transcript is always in `npm run logs`
+      notify("Someone is talking to your agent", `Q: ${question}`, {
+        dedupeKey: `q:${ip}`,
+        cooldown: 600,
+      }),
+    ]);
     res.end();
   } catch (err) {
     console.error("chat handler error", err);
