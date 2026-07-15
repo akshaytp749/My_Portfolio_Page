@@ -1,6 +1,5 @@
 import { useReducedMotion } from "motion/react";
 import { identity } from "../data/resume.js";
-import { useIsMobile } from "../lib/useIsMobile.js";
 import { trackEvent, pingNotify } from "../lib/analytics.js";
 import Terminal from "./Terminal.jsx";
 import SideRays from "./reactbits/SideRays.jsx";
@@ -8,7 +7,6 @@ import ShinyText from "./reactbits/ShinyText.jsx";
 
 export default function Hero() {
   const reduce = useReducedMotion();
-  const isMobile = useIsMobile();
 
   // overflow-clip (not overflow-hidden): on fractional-DPR displays a hidden clip
   // around the WebGL layer leaves a 1px white seam at the bottom edge during scroll;
@@ -16,10 +14,10 @@ export default function Hero() {
   return (
     <section id="top" className="relative overflow-clip">
       {/* the ONE background effect: amber SideRays from the terminal's corner —
-          the machine casting light across the graphite page. Skipped on mobile
-          (fullscreen WebGL shader = jank/battery); the fixed CSS ambient in
-          index.css still carries the warm top-right glow there. */}
-      {!reduce && !isMobile && (
+          the machine casting light across the graphite page. Renders on mobile
+          too (the ray shader is light and pauses when scrolled offscreen); the
+          fixed CSS ambient in index.css carries the glow down the rest of the page. */}
+      {!reduce && (
         <div
           className="pointer-events-none absolute inset-0"
           aria-hidden="true"
