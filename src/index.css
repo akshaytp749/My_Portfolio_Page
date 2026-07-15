@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 :root {
+  /* dark UA surfaces (scrollbar, form controls, and the viewport backdrop the
+     browser paints during scroll compositing) — kills the white scroll flicker */
+  color-scheme: dark;
+
   /* Graphite & Phosphor — neutral graphite dark, ONE amber-phosphor accent
      shared by the page and the terminal. No purple, no gradients. */
   --bg: #0b0c0e;
@@ -26,12 +30,19 @@
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
 }
 
+/* ONE continuous light source: a subtle amber ambient fixed to the viewport's
+   top-right corner (the terminal's corner). Because the gradient layer is
+   viewport-fixed, the top-right stays lit at every scroll depth — the page reads
+   as a single lit environment instead of a lit hero above a dark "block". The
+   hero's animated SideRays are the bright source that dissolves into this. */
 html {
-  background: var(--bg);
+  background:
+    radial-gradient(115% 68% at 100% -8%, rgba(245, 166, 35, 0.08), transparent 55%) fixed,
+    var(--bg);
 }
 
 body {
-  background: var(--bg);
+  background: transparent;
   color: var(--text);
   font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;

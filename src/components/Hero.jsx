@@ -7,27 +7,41 @@ import ShinyText from "./reactbits/ShinyText.jsx";
 export default function Hero() {
   const reduce = useReducedMotion();
 
+  // overflow-clip (not overflow-hidden): on fractional-DPR displays a hidden clip
+  // around the WebGL layer leaves a 1px white seam at the bottom edge during scroll;
+  // clip avoids the scroll-container promotion that causes it.
   return (
-    <section id="top" className="relative overflow-hidden">
+    <section id="top" className="relative overflow-clip">
       {/* the ONE background effect: amber SideRays from the terminal's corner —
           the machine casting light across the graphite page */}
       {!reduce && (
-        <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+        <div
+          className="pointer-events-none absolute inset-0"
+          aria-hidden="true"
+          // mask the rays layer to transparent toward the bottom: they dissolve
+          // into the fixed ambient (no dark band, no hard bright edge, no seam)
+          style={{
+            maskImage: "linear-gradient(to bottom, #000 45%, transparent 88%)",
+            WebkitMaskImage: "linear-gradient(to bottom, #000 45%, transparent 88%)",
+          }}
+        >
           <SideRays
             rayColor1="#F5A623"
-            rayColor2="#B45309"
+            rayColor2="#C2610C"
             origin="top-right"
-            intensity={2.2}
-            spread={2.4}
-            speed={1.4}
-            saturation={1.3}
-            opacity={0.85}
+            intensity={3.4}
+            spread={2.2}
+            speed={2.6}
+            saturation={1.35}
+            falloff={1.15}
+            opacity={1}
           />
-          <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-[#0b0c0e]" />
         </div>
       )}
 
-      <div className="relative mx-auto max-w-[1120px] px-5 pb-12 pt-16 sm:pt-24">
+      {/* z-10 keeps content (esp. the terminal) above SideRays' hardcoded z-[3],
+          so the opaque terminal occludes the light instead of being washed by it */}
+      <div className="relative z-10 mx-auto max-w-[1120px] px-5 pb-12 pt-16 sm:pt-24">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
             {reduce ? (

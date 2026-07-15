@@ -192,12 +192,13 @@ export const stackLayers = [
     items: ["FastAPI", "SSE streaming", "REST APIs", "Serverless", "Message queues"],
   },
   {
-    layer: "Cloud",
-    items: ["Vertex AI", "Cloud Run", "BigQuery", "Firestore", "AWS Lambda", "Docker"],
+    layer: "Cloud & infra",
+    items: ["GCP", "Vertex AI", "Cloud Run", "BigQuery", "Firestore", "AWS Lambda", "Docker"],
   },
   {
     layer: "Frontend",
-    items: ["React", "TypeScript", "Tailwind", "AI-assisted, production-deployed"],
+    items: ["React", "TypeScript", "Tailwind"],
+    note: "AI-assisted", // honest: his frontend is AI-assisted, not hand-crafted
   },
   {
     layer: "Languages",

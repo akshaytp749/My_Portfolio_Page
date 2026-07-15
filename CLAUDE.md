@@ -264,8 +264,10 @@ ebonding across Workday, NetSuite, Salesforce & Jira"
 - Orchestration: LangGraph, LangChain, Multi-agent systems, MCP, A2A
 - Retrieval: RAG, Pinecone, Hybrid search, Embeddings, Chunking strategy
 - Serving: FastAPI, SSE streaming, REST APIs, Serverless, Message queues
-- Cloud: Vertex AI, Cloud Run, BigQuery, Firestore, AWS Lambda, Docker
-- Frontend: React, TypeScript, Tailwind — production UIs, AI-assisted (this site included)
+- Cloud & infra: GCP, Vertex AI, Cloud Run, BigQuery, Firestore, AWS Lambda, Docker
+- Frontend: React, TypeScript, Tailwind — AI-assisted (rendered as a faint italic
+  `note` qualifier on the row, not a tool token; honest that his frontend is
+  AI-assisted, not hand-crafted)
 - Languages: Python, TypeScript, SQL, C++
 
 ## Footer
