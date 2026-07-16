@@ -1,6 +1,26 @@
-import { AGENT_SYSTEM_PROMPT } from "../src/data/resume.js";
+import { AGENT_SYSTEM_PROMPT, agentFacts } from "../src/data/resume.js";
 import { notify } from "../server/notify.mjs";
 import { clientIp, originAllowed } from "../server/http.mjs";
+
+// Build the system prompt fresh per request: base facts + owner-maintained gap
+// facts + a CURRENT CONTEXT line with today's date and exact tenure. The date
+// line is what stops the model guessing "present" ≈ its 2024-ish training era
+// (which made "years of experience" wildly wrong).
+function buildSystemPrompt() {
+  const now = new Date();
+  const months = (now.getUTCFullYear() - 2022) * 12 + (now.getUTCMonth() - 8); // since Sept 2022
+  const years = Math.floor(months / 12);
+  const rem = months % 12;
+  const today = now.toISOString().slice(0, 10);
+  const extra = agentFacts.length
+    ? "\n\nADDITIONAL OWNER-PROVIDED FACTS:\n" + agentFacts.map((f) => `- ${f}`).join("\n")
+    : "";
+  const context =
+    `\n\nCURRENT CONTEXT — as of ${today}: Akshay has been a professional software engineer ` +
+    `since September 2022, which is ${years} years and ${rem} months of experience as of today. ` +
+    `Compute any tenure or "years of experience" answer from September 2022 to ${today}.`;
+  return `${AGENT_SYSTEM_PROMPT}${extra}${context}`;
+}
 
 // Any OpenAI-compatible provider works — Groq (default), OpenRouter, or Gemini.
 // Switch providers by changing env vars only; see .env.example.
@@ -112,7 +132,7 @@ export default async function handler(req, res) {
         max_tokens: MAX_TOKENS,
         stream: true,
         messages: [
-          { role: "system", content: AGENT_SYSTEM_PROMPT },
+          { role: "system", content: buildSystemPrompt() },
           ...messages.map(({ role, content }) => ({ role, content })),
         ],
       }),
