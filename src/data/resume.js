@@ -256,6 +256,11 @@ RULES:
 // Anything you add here overrides the 'not on file' default for that topic.
 export const agentFacts = [
   // add owner-maintained facts here, one per line
+  "Availability: happily employed and shipping at RingCentral, but open to the right opportunity — worth a conversation if the problem is interesting.",
+  "Notice period: 60 days, and flexible on the exact start date for a strong fit.",
+  "Location: based in Bangalore, India — India's tech hub.",
+  "Work setup: open to hybrid roles in Bangalore or fully remote.",
+  "Work authorization: Indian citizen, authorized to work in India without sponsorship.",
 ];
 
 // Offline fallback answers, matched by keyword against the visitor's question.
