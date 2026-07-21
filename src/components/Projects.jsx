@@ -2,6 +2,7 @@ import { projects } from "../data/resume.js";
 import github from "../data/github.json";
 import { useSectionView } from "../lib/analytics.js";
 import Reveal from "./Reveal.jsx";
+import ProjectDemo from "./ProjectDemo.jsx";
 
 // "updated 4d ago" / "updated 3mo ago" — freshness as of the last deploy
 function timeAgo(iso) {
@@ -32,6 +33,7 @@ export default function Projects() {
               rel="noreferrer"
               className="group block h-full rounded-2xl border border-[var(--line)] bg-[var(--panel)] p-6 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-dim)]"
             >
+              {p.demo && <ProjectDemo src={p.demo} poster={p.poster} title={p.title} />}
               <div className="flex items-baseline justify-between gap-2">
                 <h3 className="text-lg font-semibold tracking-tight text-[var(--text)]">
                   {p.title}
