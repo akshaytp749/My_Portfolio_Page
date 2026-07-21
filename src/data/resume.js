@@ -151,11 +151,6 @@ export const systemsFootnote =
 export const signals =
   "IIT Madras CS '22 · Ace of the Quarter ×2 (2024) · mentored 4 interns → full-time · JEE Advanced AIR 186";
 
-// demo/poster: silent inline loop shown on the project card (see ProjectDemo.jsx).
-// Self-hosted only (CSP pins media to 'self'). Drop files in public/demos/ and set
-//   demo:   "/demos/<name>.webm"   (short muted loop, hard-compressed < ~3 MB)
-//   poster: "/demos/<name>.jpg"    (the still shown before/instead of playback)
-// Leave both null and the card renders text-only — no broken state while recording.
 export const projects = [
   {
     title: "The Interval",
@@ -164,8 +159,6 @@ export const projects = [
       "A persistent multi-agent world: AI agents portraying long-deceased historical figures live in a cafe, converse over the A2A protocol, and act only through validated MCP tools.",
     tags: ["A2A", "MCP", "Python"],
     url: "https://github.com/akshaytp749/A2A-MCP-World",
-    demo: "/demos/the-interval.mp4",
-    poster: "/demos/the-interval.jpg",
   },
   {
     title: "LLM Laptop Compatibility Checker",
@@ -174,8 +167,6 @@ export const projects = [
       "Scans your CPU, RAM, and VRAM and shows which local LLMs your machine can actually run — with Ollama integration and a live resource monitor.",
     tags: ["JavaScript", "Ollama"],
     url: "https://github.com/akshaytp749/LLM_Laptop_Compatability_Checker",
-    demo: null,
-    poster: null,
   },
   {
     title: "Local Voice Clone Assistant",
@@ -184,8 +175,6 @@ export const projects = [
       "A fully-local AI voice assistant with zero-shot voice cloning. No cloud, no API keys — Ollama for the brain, F5-TTS for the voice, Whisper for the ears.",
     tags: ["Ollama", "F5-TTS", "Whisper"],
     url: "https://github.com/akshaytp749/local-ai-voice-clone-assistant",
-    demo: null,
-    poster: null,
   },
 ];
 
