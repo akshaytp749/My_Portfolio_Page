@@ -24,8 +24,28 @@ function buildSystemPrompt() {
 
 // Any OpenAI-compatible provider works — Groq (default), OpenRouter, or Gemini.
 // Switch providers by changing env vars only; see .env.example.
-const BASE_URL = process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1";
-const MODEL = process.env.LLM_MODEL || "llama-3.3-70b-versatile";
+//
+// Providers are tried in order: the primary (LLM_*), then an optional fallback
+// (FALLBACK_LLM_*). When the primary 429s or errors — e.g. Groq's free tier
+// under a traffic spike — the request retries the fallback (OpenRouter's free
+// tier by default) BEFORE any bytes reach the client, so visitors keep hitting a
+// live model instead of dropping to the canned client-side answers. The fallback
+// is skipped unless FALLBACK_LLM_API_KEY is set. Failover is pre-stream only; a
+// mid-stream death still lands gracefully on the client's local fallback.
+const PROVIDERS = [
+  {
+    name: "primary",
+    baseUrl: process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1",
+    model: process.env.LLM_MODEL || "llama-3.3-70b-versatile",
+    apiKey: process.env.LLM_API_KEY,
+  },
+  {
+    name: "fallback",
+    baseUrl: process.env.FALLBACK_LLM_BASE_URL || "https://openrouter.ai/api/v1",
+    model: process.env.FALLBACK_LLM_MODEL || "meta-llama/llama-3.3-70b-instruct:free",
+    apiKey: process.env.FALLBACK_LLM_API_KEY,
+  },
+].filter((p) => p.apiKey);
 const MAX_TOKENS = 600;
 const MAX_MESSAGES = 20; // ~10 user turns
 const MAX_CONTENT_CHARS = 1200;
@@ -105,8 +125,7 @@ export default async function handler(req, res) {
     return res.status(403).json({ error: "forbidden" });
   }
 
-  const apiKey = process.env.LLM_API_KEY;
-  if (!apiKey) {
+  if (PROVIDERS.length === 0) {
     return res.status(503).json({ error: "agent backend not configured" });
   }
 
@@ -120,30 +139,45 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: "rate limited — try again in a few minutes" });
   }
 
-  try {
-    const upstream = await fetch(`${BASE_URL}/chat/completions`, {
-      method: "POST",
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: MAX_TOKENS,
-        stream: true,
-        messages: [
-          { role: "system", content: buildSystemPrompt() },
-          ...messages.map(({ role, content }) => ({ role, content })),
-        ],
-      }),
-    });
+  const payload = {
+    max_tokens: MAX_TOKENS,
+    stream: true,
+    messages: [
+      { role: "system", content: buildSystemPrompt() },
+      ...messages.map(({ role, content }) => ({ role, content })),
+    ],
+  };
 
-    if (!upstream.ok || !upstream.body) {
-      const detail = await upstream.text();
-      console.error("llm provider error", upstream.status, detail);
-      return res.status(502).json({ error: "upstream model error" });
+  // Failover must resolve here, before writeHead — once bytes are streaming to
+  // the client we can no longer switch providers. First provider that returns a
+  // readable stream wins; a 429/5xx or a thrown fetch falls through to the next.
+  let upstream = null;
+  for (const provider of PROVIDERS) {
+    try {
+      const r = await fetch(`${provider.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${provider.apiKey}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({ ...payload, model: provider.model }),
+      });
+      if (r.ok && r.body) {
+        upstream = r;
+        break;
+      }
+      const detail = await r.text();
+      console.error(`llm provider ${provider.name} error`, r.status, detail.slice(0, 500));
+    } catch (err) {
+      console.error(`llm provider ${provider.name} fetch failed`, err);
     }
+  }
 
+  if (!upstream) {
+    return res.status(502).json({ error: "upstream model error" });
+  }
+
+  try {
     res.writeHead(200, {
       "content-type": "text/plain; charset=utf-8",
       "cache-control": "no-cache",
