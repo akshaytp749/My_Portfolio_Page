@@ -272,6 +272,11 @@ export const agentFacts = [
 // Order matters: first match wins.
 export const fallbackAnswers = [
   {
+    keywords: ["eval", "evals", "evaluation", "accuracy", "observability", "monitoring", "mlflow", "langfuse"],
+    answer:
+      "Akshay bakes evals and observability into his systems: a golden-dataset eval harness measures his company-wide RAG at 85-95% accuracy, MLflow tracks runs across the platform and RAG, and Langfuse traces every LLM call in The Interval. Email akshaythomas.p@gmail.com for specifics.",
+  },
+  {
     keywords: ["rag", "retrieval", "pinecone", "vector"],
     answer:
       "Akshay built a production RAG system on Pinecone: hybrid dense + sparse retrieval with heading-aware chunking, serving 100k+ enterprise vectors from Cloud Run. Ask about the chunking or region filtering for details.",
