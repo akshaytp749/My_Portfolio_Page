@@ -73,8 +73,16 @@ const INJECTION_PATTERNS = [
   [/\bwithout\s+(any\s+)?(restrictions|rules|filters|censorship)\b/, "persona"],
   [/\brespond\s+only\s+with\b/, "persona"],
 
-  // prompt / instruction extraction
+  // prompt / instruction extraction — direct
   [/\b(reveal|show|print|output|repeat|display|dump|recite|echo|expose|leak)\b[^.?!]{0,40}\b(system\s*)?(prompt|instruction|directive|rule)s?\b/, "extraction"],
+  // ...and indirect: laundering the same request through a transformation
+  // ("summarize", "translate", "as a story") is still an extraction attempt.
+  // Anchored on "your" so questions about Akshay's systems ("describe the
+  // configuration of his RAG pipeline") are unaffected.
+  [/\b(summar(y|ize|ise)|paraphrase|translate|rephrase|describe|explain|list|outline|encode|encrypt|base64)\b[^.?!]{0,30}\byour\b[^.?!]{0,25}\b(prompt|instruction|directive|rule|guideline|configuration|config|setup|setting|training)s?\b/, "extraction"],
+  [/\b(the|your)\s+system\s*(prompt|message|instruction)/, "extraction"],
+  [/\bintegrity\s*token\b/, "extraction"],
+  [/\bwhat\s+(is|are)\s+your\s+(prompt|instruction|rule|guideline|configuration|directive)s?\b/, "extraction"],
   [/\b(what|tell\s+me)\b[^.?!]{0,30}\b(your|the)\b[^.?!]{0,20}\b(system\s*prompt|initial\s+instruction|original\s+instruction)/, "extraction"],
   [/\brepeat\s+(everything|all|the\s+text|the\s+words)\b[^.?!]{0,20}\b(above|before|prior)/, "extraction"],
   [/\bverbatim\b[^.?!]{0,30}\b(prompt|instruction)/, "extraction"],
@@ -105,6 +113,10 @@ const INJECTION_NEEDLES = [
   "bypassyourrules",
   "actasdan",
   "norestrictions",
+  "yourinstructions",
+  "yourconfiguration",
+  "integritytoken",
+  "yoursystemprompt",
 ];
 
 // Long opaque blobs are almost always encoded payloads, never real questions.
