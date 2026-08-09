@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "sync-resume": "node scripts/sync-resume.mjs",
-    "logs": "node scripts/read-logs.mjs"
+    "logs": "node scripts/read-logs.mjs",
+    "redteam": "node scripts/redteam.mjs"
   },
   "dependencies": {
     "@vercel/analytics": "^2.0.1",
