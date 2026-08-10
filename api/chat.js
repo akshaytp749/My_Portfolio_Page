@@ -62,6 +62,19 @@ const PROVIDERS = [
 ].filter((p) => p.apiKey);
 const MAX_TOKENS = 600;
 const MAX_MESSAGES = 20; // ~10 user turns
+
+// Friendly provider name from a base URL host, for the terminal status line.
+function providerLabel(baseUrl) {
+  try {
+    const host = new URL(baseUrl).host;
+    if (host.includes("groq")) return "groq";
+    if (host.includes("openrouter")) return "openrouter";
+    if (host.includes("google")) return "gemini";
+    return host.replace(/^api\./, "");
+  } catch {
+    return "llm";
+  }
+}
 const MAX_CONTENT_CHARS = 1200;
 const RATE_LIMIT_PER_10_MIN = 30;
 const LOG_TTL_SECONDS = 60 * 60 * 24 * 45; // logs self-delete after 45 days
@@ -164,6 +177,9 @@ export default async function handler(req, res) {
     res.writeHead(200, {
       "content-type": "text/plain; charset=utf-8",
       "cache-control": "no-cache",
+      // Same-origin, so the client reads this directly. Tells the terminal to
+      // render a [guard] system line: the block is real security, so show it.
+      "x-agent-guard": `input:${inbound.reason}`,
     });
     res.write(guardDeflection);
     await logConversation(question, `[guard:${inbound.reason}] ${guardDeflection}`);
@@ -187,6 +203,7 @@ export default async function handler(req, res) {
   // the client we can no longer switch providers. First provider that returns a
   // readable stream wins; a 429/5xx or a thrown fetch falls through to the next.
   let upstream = null;
+  let served = null;
   for (const provider of PROVIDERS) {
     try {
       const r = await fetch(`${provider.baseUrl}/chat/completions`, {
@@ -199,6 +216,7 @@ export default async function handler(req, res) {
       });
       if (r.ok && r.body) {
         upstream = r;
+        served = provider;
         break;
       }
       const detail = await r.text();
@@ -216,6 +234,11 @@ export default async function handler(req, res) {
     res.writeHead(200, {
       "content-type": "text/plain; charset=utf-8",
       "cache-control": "no-cache",
+      // Honest telemetry for the terminal's status line: which provider/model
+      // actually answered, and whether the failover path was the one that did.
+      "x-agent-provider": providerLabel(served.baseUrl),
+      "x-agent-model": served.model,
+      ...(served.name === "fallback" ? { "x-agent-failover": "1" } : {}),
     });
 
     // provider SSE → plain text token passthrough, gated by LAYER 3.

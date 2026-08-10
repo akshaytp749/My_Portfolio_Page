@@ -23,6 +23,31 @@ const lineColors = {
   answer: "text-[var(--term-answer)]",
   error: "text-[var(--accent)]",
   note: "text-[var(--term-dim)]",
+  guard: "text-[var(--term-dim)]",
+  meta: "text-[var(--term-dim)]",
+};
+
+// Server guard reasons → what a human reads. The block is real security work,
+// so name it plainly rather than hide it.
+const guardLabels = {
+  override: "instruction-override attempt",
+  persona: "role-override attempt",
+  extraction: "prompt-extraction attempt",
+  obfuscated: "obfuscated injection",
+  encoded: "encoded payload",
+};
+
+const guardLine = (guard) =>
+  `${guardLabels[guard.reason] || "injection attempt"} · refused pre-model · layer 1/3`;
+
+// Honest request telemetry: latency + first-token are measured client-side; the
+// provider/model come from the response headers of the request that answered.
+const telemetryLine = (meta) => {
+  const parts = [`${meta.ms}ms`];
+  if (meta.firstMs != null) parts.push(`first token ${meta.firstMs}ms`);
+  if (meta.provider) parts.push(meta.model ? `${meta.provider}/${meta.model}` : meta.provider);
+  if (meta.failover) parts.push("failover");
+  return parts.join(" · ");
 };
 
 export default function Terminal() {
@@ -149,7 +174,15 @@ export default function Terminal() {
     demoCancelRef.current = false;
 
     // real token stream from the backend; callbacks never fire on fallback
-    const { text, demo } = await askAgentStream(history, {
+    const { text, demo, meta } = await askAgentStream(history, {
+      // fires after headers, before the first token — so a [guard] line lands
+      // above the answer it explains
+      onMeta: (m) => {
+        if (m.guard) {
+          setPending(false);
+          setEntries((prev) => [...prev, { kind: "guard", text: guardLine(m.guard) }]);
+        }
+      },
       onStart: () => {
         setPending(false);
         setEntries((prev) => [...prev, { kind: "answer", text: "" }]);
@@ -171,6 +204,11 @@ export default function Terminal() {
     } else {
       setMode("live");
       appendToLast("answer", text); // ensure the final full text landed
+      // telemetry line under real answers — but not under a pre-model guard
+      // block (nothing was generated, so latency/model would be misleading)
+      if (meta && !meta.guard) {
+        setEntries((prev) => [...prev, { kind: "meta", text: telemetryLine(meta) }]);
+      }
     }
     setBusy(false);
     inputRef.current?.focus();
@@ -218,17 +256,33 @@ export default function Terminal() {
             )}
           </div>
         ))}
-        {entries.map((e, i) => (
-          <div key={`e-${i}`} className={`mt-2 ${lineColors[e.kind]}`}>
-            {e.kind === "user" && (
-              <span className="text-[var(--term-dim)]">$ </span>
-            )}
-            {e.kind === "answer" && (
-              <span className="text-[var(--accent-dim)]">▸ </span>
-            )}
-            {e.text}
-          </div>
-        ))}
+        {entries.map((e, i) => {
+          if (e.kind === "guard") {
+            return (
+              <div key={`e-${i}`} className="mt-2 text-[12px] text-[var(--term-dim)]">
+                <span className="text-[var(--accent)]">[guard]</span> {e.text}
+              </div>
+            );
+          }
+          if (e.kind === "meta") {
+            return (
+              <div key={`e-${i}`} className="mt-1.5 text-[11px] text-[var(--term-dim)] opacity-70">
+                [ {e.text} ]
+              </div>
+            );
+          }
+          return (
+            <div key={`e-${i}`} className={`mt-2 ${lineColors[e.kind]}`}>
+              {e.kind === "user" && (
+                <span className="text-[var(--term-dim)]">$ </span>
+              )}
+              {e.kind === "answer" && (
+                <span className="text-[var(--accent-dim)]">▸ </span>
+              )}
+              {e.text}
+            </div>
+          );
+        })}
         {pending && (
           <div className="mt-2 text-[var(--term-dim)]">
             <span className="text-[var(--accent-dim)]">▸ </span>
