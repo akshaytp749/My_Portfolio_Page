@@ -40,6 +40,51 @@ const guardLabels = {
 const guardLine = (guard) =>
   `${guardLabels[guard.reason] || "injection attempt"} · refused pre-model · layer 1/3`;
 
+// Turn URLs and emails in an answer into clickable links — but ONLY to Akshay's
+// own destinations (GitHub, LinkedIn, email). The answer text comes from the LLM;
+// whitelisting the host means a creative or jailbroken model can't render a
+// clickable link to somewhere it shouldn't. Same defense-by-exclusion posture as
+// the rest of the agent. Matches bare hosts too, since the facts say
+// "github.com/akshaytp749" without a scheme.
+const LINK_RE =
+  /((?:https?:\/\/)?(?:www\.)?(?:github\.com|linkedin\.com)\/[^\s)]+|[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+
+function renderRichText(text) {
+  const out = [];
+  let last = 0;
+  for (const m of text.matchAll(LINK_RE)) {
+    const raw = m[0];
+    const start = m.index;
+    if (start > last) out.push(text.slice(last, start));
+    last = start + raw.length;
+
+    // don't swallow trailing sentence punctuation into the link
+    const token = raw.replace(/[.,;:!?)\]}>'"]+$/, "");
+    const trailing = raw.slice(token.length);
+    const isEmail = token.includes("@") && !/^https?:\/\//.test(token);
+    const href = isEmail
+      ? `mailto:${token}`
+      : /^https?:\/\//.test(token)
+        ? token
+        : `https://${token}`;
+
+    out.push(
+      <a
+        key={`lnk-${start}`}
+        href={href}
+        target={isEmail ? undefined : "_blank"}
+        rel="noopener noreferrer nofollow"
+        className="text-[var(--accent)] underline decoration-[var(--accent-dim)] underline-offset-2 hover:decoration-[var(--accent)]"
+      >
+        {token}
+      </a>
+    );
+    if (trailing) out.push(trailing);
+  }
+  if (last < text.length) out.push(text.slice(last));
+  return out;
+}
+
 // Honest request telemetry: latency + first-token are measured client-side; the
 // provider/model come from the response headers of the request that answered.
 const telemetryLine = (meta) => {
@@ -279,7 +324,7 @@ export default function Terminal() {
               {e.kind === "answer" && (
                 <span className="text-[var(--accent-dim)]">▸ </span>
               )}
-              {e.text}
+              {e.kind === "answer" || e.kind === "note" ? renderRichText(e.text) : e.text}
             </div>
           );
         })}
