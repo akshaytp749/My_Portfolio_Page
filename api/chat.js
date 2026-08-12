@@ -17,7 +17,7 @@ import {
 // replayed verbatim — a leak signal that needs no pattern matching. It is
 // regenerated every request so it can never be learned or guessed from a prior
 // session.
-function buildSystemPrompt(canary) {
+export function buildSystemPrompt(canary) {
   const now = new Date();
   const months = (now.getUTCFullYear() - 2022) * 12 + (now.getUTCMonth() - 8); // since Sept 2022
   const years = Math.floor(months / 12);
@@ -188,7 +188,11 @@ export default async function handler(req, res) {
 
   const canary = randomUUID();
   const systemPrompt = buildSystemPrompt(canary);
-  const guard = createOutputGuard(systemPrompt, canary, { speakable: [guardDeflection] });
+  // Fingerprint the AUTHORED prompt, never the runtime one: owner facts and the
+  // CURRENT CONTEXT line are appended per request and are meant to be spoken.
+  const guard = createOutputGuard(AGENT_SYSTEM_PROMPT, canary, {
+    speakable: [guardDeflection],
+  });
 
   const payload = {
     max_tokens: MAX_TOKENS,

@@ -184,7 +184,17 @@ export function createOutputGuard(systemPrompt, canary, { speakable = [] } = {})
   const prompt = String(systemPrompt ?? "");
   const identity = prompt.split("\n", 1)[0] ?? "";
   const rulesIdx = prompt.search(/^RULES:/m);
-  const rules = rulesIdx === -1 ? "" : prompt.slice(rulesIdx);
+
+  // The rules block ends where runtime-injected CONTENT begins. Everything
+  // appended per request — owner facts, the CURRENT CONTEXT tenure line, the
+  // integrity token — is material the agent is SUPPOSED to recite, so it must
+  // never enter the fingerprint. Getting this wrong silently blocks correct
+  // answers: fingerprinting the tenure line made "how many years of experience
+  // does he have?" look like a prompt leak, because the honest answer quotes it.
+  const RUNTIME_APPEND = /\n\n(ADDITIONAL OWNER-PROVIDED FACTS:|CURRENT CONTEXT|INTEGRITY TOKEN:)/;
+  let rules = rulesIdx === -1 ? "" : prompt.slice(rulesIdx);
+  const appendIdx = rules.search(RUNTIME_APPEND);
+  if (appendIdx !== -1) rules = rules.slice(0, appendIdx);
 
   const fingerprint = new Set([...ngramsOf(identity), ...ngramsOf(rules)]);
 
