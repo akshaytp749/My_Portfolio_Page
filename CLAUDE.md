@@ -184,10 +184,21 @@ the last deploy. A failed fetch must not fail the build — fall back to the com
   resume/email alerts fire client-side via `pingNotify()` → `api/notify.js`
   (5-min per-IP dedupe). No PII in analytics; the question text goes only to the
   owner's own inbox + logs.
-- Groq free tier is limited per-MINUTE: 12k tokens/min for llama-3.3-70b, and the
-  system prompt costs ~1k tokens per request → ~11 requests/min ceiling. Bursts 429
-  → client falls back to demo answers (graceful, by design). If traffic ever matters,
-  switch LLM_MODEL to a smaller model or move providers via env.
+- Groq free tier is limited per-MINUTE: every chat model is 8k tokens/min
+  (measured 2026-11-16), and a request reserves ~2.3k (system prompt + max_tokens),
+  so the ceiling is ~3 questions/min site-wide. Bursts 429 → failover → client
+  falls back to demo answers (graceful, by design). Setting FALLBACK_LLM_API_KEY
+  is what keeps a burst on a live model. If traffic ever matters, switch LLM_MODEL to a
+  smaller model or move providers via env.
+- Free-tier model ids get RETIRED. Groq shut down `llama-3.3-70b-versatile` on
+  2026-08-16 and the agent silently served demo answers for three months. Default
+  is now `openai/gpt-oss-120b` (a reasoning model — `api/chat.js` sends
+  `reasoning_effort: "low"` so hidden reasoning doesn't eat max_tokens); the
+  fallback is the `openrouter/free` router rather than a pinned id. When every
+  provider fails, `api/chat.js` now alerts the owner via `notify()` (1/hour). If
+  that alert fires, check https://console.groq.com/docs/deprecations first.
+- Provider fetches have an 8s header timeout (`CONNECT_TIMEOUT_MS`) so a hung
+  provider fails over instead of stalling until the client gives up.
 - This is a public LLM endpoint — expect prompt-injection attempts. Defenses: the
   stay-in-character rule in AGENT_SYSTEM_PROMPT, hard max_tokens cap, turn cap,
   message length caps. Nothing secret lives in the prompt, so the blast radius is

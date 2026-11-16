@@ -50,17 +50,31 @@ const PROVIDERS = [
   {
     name: "primary",
     baseUrl: process.env.LLM_BASE_URL || "https://api.groq.com/openai/v1",
-    model: process.env.LLM_MODEL || "llama-3.3-70b-versatile",
+    model: process.env.LLM_MODEL || "openai/gpt-oss-120b",
     apiKey: process.env.LLM_API_KEY,
   },
   {
     name: "fallback",
     baseUrl: process.env.FALLBACK_LLM_BASE_URL || "https://openrouter.ai/api/v1",
-    model: process.env.FALLBACK_LLM_MODEL || "meta-llama/llama-3.3-70b-instruct:free",
+    // A router id, not a pinned model: free model ids get retired every few
+    // months (that is what took this endpoint down in Aug 2026), and the
+    // fallback's whole job is to still exist when the primary doesn't.
+    model: process.env.FALLBACK_LLM_MODEL || "openrouter/free",
     apiKey: process.env.FALLBACK_LLM_API_KEY,
   },
 ].filter((p) => p.apiKey);
 const MAX_TOKENS = 600;
+// Time allowed for a provider to return response HEADERS. Without it a hung
+// provider never errors, so failover never fires and the client just times out.
+// Two providers at 8s each still fits inside the client's 30s budget.
+const CONNECT_TIMEOUT_MS = 8000;
+
+// gpt-oss models reason before answering, and those hidden tokens are billed
+// against max_tokens. Keep reasoning short so the visible answer isn't truncated.
+// Only sent for models known to accept it — other providers may reject the field.
+function modelParams(model) {
+  return /gpt-oss/.test(model) ? { reasoning_effort: "low" } : {};
+}
 const MAX_MESSAGES = 20; // ~10 user turns
 
 // Friendly provider name from a base URL host, for the terminal status line.
@@ -208,7 +222,13 @@ export default async function handler(req, res) {
   // readable stream wins; a 429/5xx or a thrown fetch falls through to the next.
   let upstream = null;
   let served = null;
+  const failures = [];
+  let outage = false; // any failure that is NOT a plain 429
   for (const provider of PROVIDERS) {
+    // Abort only while waiting for headers; the timer is cleared once they
+    // arrive so a long (healthy) token stream is never cut off.
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), CONNECT_TIMEOUT_MS);
     try {
       const r = await fetch(`${provider.baseUrl}/chat/completions`, {
         method: "POST",
@@ -216,7 +236,12 @@ export default async function handler(req, res) {
           authorization: `Bearer ${provider.apiKey}`,
           "content-type": "application/json",
         },
-        body: JSON.stringify({ ...payload, model: provider.model }),
+        body: JSON.stringify({
+          ...payload,
+          ...modelParams(provider.model),
+          model: provider.model,
+        }),
+        signal: ctrl.signal,
       });
       if (r.ok && r.body) {
         upstream = r;
@@ -225,12 +250,30 @@ export default async function handler(req, res) {
       }
       const detail = await r.text();
       console.error(`llm provider ${provider.name} error`, r.status, detail.slice(0, 500));
+      failures.push(`${provider.name} (${provider.model}): HTTP ${r.status} ${detail.slice(0, 200)}`);
+      if (r.status !== 429) outage = true;
     } catch (err) {
+      outage = true;
       console.error(`llm provider ${provider.name} fetch failed`, err);
+      const why = ctrl.signal.aborted ? `no response in ${CONNECT_TIMEOUT_MS}ms` : String(err);
+      failures.push(`${provider.name} (${provider.model}): ${why}`);
+    } finally {
+      clearTimeout(timer);
     }
   }
 
   if (!upstream) {
+    // Every provider failed, so visitors are now getting canned demo answers.
+    // That is invisible from the outside — tell the owner. One alert per hour.
+    // Pure 429s are skipped: free-tier bursts recover on their own within a
+    // minute and are expected; a retired model, bad key or outage is not.
+    if (outage) {
+      await notify(
+        "Portfolio agent is DOWN: every LLM provider failed",
+        `Visitors are seeing demo-mode answers.\n\n${failures.join("\n")}`,
+        { dedupeKey: "agent-down", cooldown: 3600 }
+      );
+    }
     return res.status(502).json({ error: "upstream model error" });
   }
 

@@ -272,6 +272,9 @@ export const agentFacts = [
   "Location: based in Bangalore, India — India's tech hub.",
   "Work setup: open to hybrid roles in Bangalore or fully remote.",
   "Work authorization: Indian citizen, authorized to work in India without sponsorship.",
+  // Without the exact URLs the model invents plausible ones (it produced
+  // github.com/akshaytp749/The-Interval, which 404s, and claimed LinkedIn wasn't listed).
+  "Links: LinkedIn is linkedin.com/in/AkshayThomas. Side-project repos are github.com/akshaytp749/A2A-MCP-World (The Interval), github.com/akshaytp749/LLM_Laptop_Compatability_Checker, and github.com/akshaytp749/local-ai-voice-clone-assistant. Give only these exact URLs; never construct or guess a link.",
 ];
 
 // Offline fallback answers, matched by keyword against the visitor's question.
